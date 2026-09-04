@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+ollama
+chromadb
+pydantic
+pydantic-settings
+pyyaml
+pypdf
+python-docx
+python-multipart
+httpx
