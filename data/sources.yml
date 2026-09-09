@@ -1,0 +1,356 @@
+schema_version: 1
+
+sources:
+  - source_id: owasp-authentication-cheat-sheet
+    title: "OWASP Authentication Cheat Sheet"
+    publisher: "OWASP Foundation"
+    version: "master branch as retrieved on 2026-09-04"
+    official_url: "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html"
+    retrieval_url: "https://raw.githubusercontent.com/OWASP/CheatSheetSeries/master/cheatsheets/Authentication_Cheat_Sheet.md"
+    license_name: "CC-BY-SA-4.0"
+    license_url: "https://github.com/OWASP/CheatSheetSeries/blob/master/LICENSE.md"
+    retrieved_at: "2026-09-04"
+    local_relative_path: "raw/owasp/Authentication_Cheat_Sheet.md"
+    file_type: "markdown"
+    sha256: "4844f1d380457e3ee43671b5df075617a177bf51ad7dc904627df50df26dfb81"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect, security-engineer]
+    classification: "public"
+    approved: true
+    approved_by: Glenn Merritt
+    approved_at: 2026-09-04
+    notes: "Reviewed as an authoritative public application-security source."
+
+  - source_id: nist-sp-800-53-rev5
+    title: "Security and Privacy Controls for Information Systems and Organizations"
+    publisher: "National Institute of Standards and Technology"
+    version: "NIST SP 800-53 Revision 5"
+    official_url: "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"
+    retrieval_url: "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53r5.pdf"
+    license_name: "NIST publication terms"
+    retrieved_at: "2026-09-04"
+    local_relative_path: "raw/nist/NIST.SP.800-53r5.pdf"
+    file_type: "pdf"
+    sha256: "fc63bcd61715d0181dd8e85998b1e6201ae3515fc6626102101cab1841e11ec6"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect, security-engineer]
+    classification: "public"
+    approved: true
+    approved_by: Glenn Merritt
+    approved_at: 2026-09-04
+    notes: "Raw PDF excluded from Git because of its size; retrieve from NIST."
+    
+  - source_id: nist-ai-rmf-1-0
+    title: "Artificial Intelligence Risk Management Framework (AI RMF 1.0)"
+    publisher: "National Institute of Standards and Technology"
+    version: "NIST AI 100-1, Version 1.0"
+    official_url: "https://www.nist.gov/itl/ai-risk-management-framework"
+    retrieval_url: "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf"
+    license_name: "NIST publication terms"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "raw/nist/NIST.AI.100-1.pdf"
+    file_type: "pdf"
+    sha256: "7576edb531d9848825814ee88e28b1795d3a84b435b4b797d3670eafdc4a89f1"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect, security-engineer]
+    classification: "public"
+    approved: true
+    approved_by: Glenn Merritt
+    approved_at: 2026-09-05
+    notes: "Reviewed as authoritative AI risk-management guidance. Record the exact version because NIST is revising the AI RMF."
+
+  - source_id: nist-ai-rmf-genai-profile
+    title: "Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile"
+    publisher: "National Institute of Standards and Technology"
+    version: "NIST AI 600-1, July 2024"
+    official_url: "https://doi.org/10.6028/NIST.AI.600-1"
+    retrieval_url: "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf"
+    license_name: "NIST publication terms"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "raw/nist/NIST.AI.600-1.pdf"
+    file_type: "pdf"
+    sha256: "6e73620ab6b64e90ef2c04bf0e0d6246185a2f4b1b13cab0df494496cff89b6a"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect, security-engineer]
+    classification: "public"
+    approved: true
+    approved_by: Glenn Merritt
+    approved_at: 2026-09-05
+    notes: "Reviewed as authoritative guidance for identifying and managing risks specific to generative AI."
+
+  - source_id: nist-csf-2-0
+    title: "The NIST Cybersecurity Framework (CSF) 2.0"
+    publisher: "National Institute of Standards and Technology"
+    version: "NIST CSWP 29, CSF 2.0"
+    official_url: "https://csrc.nist.gov/pubs/cswp/29/the-nist-cybersecurity-framework-csf-20/final"
+    retrieval_url: "https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf"
+    license_name: "NIST publication terms"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "raw/nist/NIST.CSWP.29.pdf"
+    file_type: "pdf"
+    sha256: "3c31f46fee98cac0c4323453e5109291a213b4de7fef8c058af9bf67f717433c"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect, security-engineer]
+    classification: "public"
+    approved: true
+    approved_by: Glenn Merritt
+    approved_at: 2026-09-05
+    notes: "Reviewed as authoritative cybersecurity governance, risk-management, and organizational-outcome guidance."
+
+  - source_id: nist-sp-800-160v1r1
+    title: "Engineering Trustworthy Secure Systems"
+    publisher: "National Institute of Standards and Technology"
+    version: "NIST SP 800-160 Volume 1 Revision 1"
+    official_url: "https://csrc.nist.gov/pubs/sp/800/160/v1/r1/final"
+    retrieval_url: "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-160v1r1.pdf"
+    license_name: "NIST publication terms"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "raw/nist/NIST.SP.800-160v1r1.pdf"
+    file_type: "pdf"
+    sha256: "eced250e47e542698ddfd5e72bd7feae14268e72a1e9ea49af9984c0e01ff7b8"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect, security-engineer]
+    classification: "public"
+    approved: true
+    approved_by: Glenn Merritt
+    approved_at: 2026-09-05
+    notes: "Reviewed as authoritative systems-security-engineering and trustworthy-architecture guidance."
+
+  - source_id: nist-sp-800-207
+    title: "Zero Trust Architecture"
+    publisher: "National Institute of Standards and Technology"
+    version: "NIST SP 800-207, August 2020"
+    official_url: "https://csrc.nist.gov/pubs/sp/800/207/final"
+    retrieval_url: "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-207.pdf"
+    license_name: "NIST publication terms"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "raw/nist/NIST.SP.800-207.pdf"
+    file_type: "pdf"
+    sha256: "0290d6ece24874287316f4bf430fef770aa4ec08a2227c8f2c1e5b2ff975e03d"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect, security-engineer]
+    classification: "public"
+    approved: true
+    approved_by: Glenn Merritt
+    approved_at: 2026-09-05
+    notes: "Reviewed as authoritative Zero Trust architecture guidance for identity, access, resources, policy enforcement, and trust decisions."
+
+  - source_id: owasp-genai-llm-top-10-2026
+    title: "OWASP GenAI LLM Top 10 2026"
+    publisher: "OWASP Foundation"
+    version: "2026 v1.0"
+    official_url: "https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/"
+    retrieval_url: "https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/"
+    license_name: "CC-BY-SA-4.0"
+    license_url: "https://creativecommons.org/licenses/by-sa/4.0/"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "raw/owasp/OWASP-GenAI-LLM-Top-10-2026-v1.0.pdf"
+    file_type: "pdf"
+    sha256: "ef87993a4e50ae9d83b41ff7a3d3e6320a82dfa8d4ec6bf98d0ce264b2e6108e"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect, security-engineer]
+    classification: "public"
+    approved: true
+    approved_by: Glenn Merritt
+    approved_at: 2026-09-05
+    notes: "Reviewed as current public guidance for identifying and mitigating LLM and GenAI application-security risks."
+
+  - source_id: owasp-secure-cloud-architecture-cheat-sheet
+    title: "OWASP Secure Cloud Architecture Cheat Sheet"
+    publisher: "OWASP Foundation"
+    version: "master branch as retrieved on 2026-09-05"
+    official_url: "https://cheatsheetseries.owasp.org/cheatsheets/Secure_Cloud_Architecture_Cheat_Sheet.html"
+    retrieval_url: "https://raw.githubusercontent.com/OWASP/CheatSheetSeries/master/cheatsheets/Secure_Cloud_Architecture_Cheat_Sheet.md"
+    license_name: "CC-BY-SA-4.0"
+    license_url: "https://github.com/OWASP/CheatSheetSeries/blob/master/LICENSE.md"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "raw/owasp/Secure_Cloud_Architecture_Cheat_Sheet.md"
+    file_type: "markdown"
+    sha256: "4ff8d09b970f5c6c9bbb12a7b4ec6f2d927ccde005a2297097fc7b834bdf7e6e"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect, security-engineer]
+    classification: "public"
+    approved: true
+    approved_by: Glenn Merritt
+    approved_at: 2026-09-05
+    notes: "Reviewed as authoritative public cloud-security architecture guidance."
+
+  - source_id: owasp-threat-modeling-cheat-sheet
+    title: "OWASP Threat Modeling Cheat Sheet"
+    publisher: "OWASP Foundation"
+    version: "master branch as retrieved on 2026-09-05"
+    official_url: "https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html"
+    retrieval_url: "https://raw.githubusercontent.com/OWASP/CheatSheetSeries/master/cheatsheets/Threat_Modeling_Cheat_Sheet.md"
+    license_name: "CC-BY-SA-4.0"
+    license_url: "https://github.com/OWASP/CheatSheetSeries/blob/master/LICENSE.md"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "raw/owasp/Threat_Modeling_Cheat_Sheet.md"
+    file_type: "markdown"
+    sha256: "2fbfffaa2b9d734271d7e84ccb550290858586171a5807db7b2bf13bf24aa093"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect, security-engineer]
+    classification: "public"
+    approved: true
+    approved_by: Glenn Merritt
+    approved_at: 2026-09-05
+    notes: "Reviewed as authoritative public guidance for application decomposition, threat identification, mitigation, and validation."
+
+    source_id: sabsa-r100-security-services-catalogue
+    title: "SABSA Security Services Catalogue"
+    publisher: "The SABSA Institute C.I.C."
+    version: "TSI R100 v1.00"
+    official_url: "https://sabsa.org/white-papers/"
+    retrieval_url: "https://sabsa.org/white-papers/"
+    license_name: "SABSA Limited Open Source Licence, subject to SABSA Terms of Use"
+    license_url: "https://sabsa.org/open-source-licence/"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "reference-only/SABSA/TSI-R100-Security-Services-Catalog-v1.00.pdf"
+    file_type: "pdf"
+    sha256: "dac389a3c23a6542bbbfb238a774105a1f1f08c6e97c8ba8745a5e44ede8a9ac"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect]
+    classification: "restricted"
+    approved: false
+    approved_by: null
+    approved_at: null
+    notes: "Reference-only. Do not chunk, embed, index, publish, or use for AI retrieval without written permission from The SABSA Institute."
+
+  - source_id: sabsa-r101-matrices-2018-release-notes
+    title: "The SABSA Matrices 2018 Release Notes"
+    publisher: "The SABSA Institute C.I.C."
+    version: "TSI R101, 2018 release"
+    official_url: "https://sabsa.org/sabsa-matrices-2018-updates/"
+    retrieval_url: "https://sabsa.org/white-papers/"
+    license_name: "SABSA Limited Open Source Licence, subject to SABSA Terms of Use"
+    license_url: "https://sabsa.org/open-source-licence/"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "reference-only/SABSA/TSI-R101-SABSA-Matrices-2018-Release-Notes.pdf"
+    file_type: "pdf"
+    sha256: "e5c187512892338ef841577ed171447a9432294331ac315a84d029694e2f4396"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect]
+    classification: "restricted"
+    approved: false
+    approved_by: null
+    approved_at: null
+    notes: "Reference-only. Do not chunk, embed, index, publish, or use for AI retrieval without written permission from The SABSA Institute."
+
+  - source_id: sabsa-w100-white-paper
+    title: "The SABSA White Paper"
+    publisher: "The SABSA Institute C.I.C."
+    version: "TSI W100"
+    official_url: "https://sabsa.org/white-papers/"
+    retrieval_url: "https://sabsa.org/white-papers/"
+    license_name: "SABSA Limited Open Source Licence, subject to SABSA Terms of Use"
+    license_url: "https://sabsa.org/open-source-licence/"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "reference-only/SABSA/TSI-W100-SABSA-White-Paper.pdf"
+    file_type: "pdf"
+    sha256: "676403bbb6d3e0336a6de898ac5ea7ad7e677caf6385934c3f6a6dd5f0dc68bf"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect]
+    classification: "restricted"
+    approved: false
+    approved_by: null
+    approved_at: null
+    notes: "Reference-only. Do not chunk, embed, index, publish, or use for AI retrieval without written permission from The SABSA Institute."
+
+  - source_id: sabsa-w101-architecting-secure-digital-world
+    title: "Architecting a Secure Digital World"
+    publisher: "The SABSA Institute C.I.C."
+    version: "TSI W101"
+    official_url: "https://sabsa.org/architecting-a-secure-digital-world-white-paper/"
+    retrieval_url: "https://sabsa.org/white-papers/"
+    license_name: "SABSA Limited Open Source Licence, subject to SABSA Terms of Use"
+    license_url: "https://sabsa.org/open-source-licence/"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "reference-only/SABSA/TSI-W101-Architecting-a-Secure-Digital-World.pdf"
+    file_type: "pdf"
+    sha256: "29bd81fc3d33b62d202e6e6a2ae8a8c35d4f614f846e6d89f971deba378ab2e3"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect]
+    classification: "restricted"
+    approved: false
+    approved_by: null
+    approved_at: null
+    notes: "Reference-only. Do not chunk, embed, index, publish, or use for AI retrieval without written permission from The SABSA Institute."
+
+  - source_id: sabsa-w102-meaning-of-risk
+    title: "SABSA Risk Management Part One: The Meaning of Risk"
+    publisher: "The SABSA Institute C.I.C."
+    version: "TSI W102"
+    official_url: "https://sabsa.org/w102-sabsa-risk-management-part-one-the-meaning-of-risk/"
+    retrieval_url: "https://sabsa.org/white-papers/"
+    license_name: "SABSA Limited Open Source Licence, subject to SABSA Terms of Use"
+    license_url: "https://sabsa.org/open-source-licence/"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "reference-only/SABSA/TSI-W102-SABSA-Risk-Management-Part-One-The-Meaning-of-Risk.pdf"
+    file_type: "pdf"
+    sha256: "2abe742dcf23739d14a1c356ed48a56fc318c4af7beb4c4340d6ae00dd7f150a"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect]
+    classification: "restricted"
+    approved: false
+    approved_by: null
+    approved_at: null
+    notes: "Reference-only. Do not chunk, embed, index, publish, or use for AI retrieval without written permission from The SABSA Institute."
+
+  - source_id: sabsa-w103-responsibility-assignment-modelling
+    title: "SABSA Responsibility Assignment Modelling"
+    publisher: "The SABSA Institute C.I.C."
+    version: "TSI W103 v01.01"
+    official_url: "https://sabsa.org/sabsa-responsibility-assignment-modelling-download-request/"
+    retrieval_url: "https://sabsa.org/white-papers/"
+    license_name: "SABSA Limited Open Source Licence, subject to SABSA Terms of Use"
+    license_url: "https://sabsa.org/open-source-licence/"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "reference-only/SABSA/TSI-W103-SABSA-Responsibility-Assignment-Modelling-v0101.pdf"
+    file_type: "pdf"
+    sha256: "31fdd0b6ee8f41d81cb0616194ead08dad7e9c54836db5f459afc67c8b4a5e05"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect]
+    classification: "restricted"
+    approved: false
+    approved_by: null
+    approved_at: null
+    notes: "Reference-only. Do not chunk, embed, index, publish, or use for AI retrieval without written permission from The SABSA Institute."
+
+  - source_id: sabsa-w117-togaf-integration
+    title: "TOGAF and SABSA Integration"
+    publisher: "The SABSA Institute C.I.C. and The Open Group"
+    version: "TSI W117"
+    official_url: "https://sabsa.org/sabsa-togaf-integration-white-paper-download-request/"
+    retrieval_url: "https://sabsa.org/white-papers/"
+    license_name: "SABSA Limited Open Source Licence and applicable joint-publication terms"
+    license_url: "https://sabsa.org/open-source-licence/"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "reference-only/SABSA/TSI-W117-SABSA-TOGAF-Integration.pdf"
+    file_type: "pdf"
+    sha256: "a7fa60a27d12b0342c1fda95693089fa06a901ae82bd92c191632a884265f835"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect]
+    classification: "restricted"
+    approved: false
+    approved_by: null
+    approved_at: null
+    notes: "Joint publication. Reference-only pending confirmation of AI-retrieval rights from the applicable rights holders."
+
+  - source_id: sabsa-w105-enterprise-security-architecture-principles
+    title: "SABSA Enterprise Security Architecture Principles"
+    publisher: "The SABSA Institute C.I.C."
+    version: "TSI W105"
+    official_url: "https://sabsa.org/w105-sabsa-enterprise-security-architecture-principles/"
+    retrieval_url: "https://sabsa.org/white-papers/"
+    license_name: "SABSA Limited Open Source Licence, subject to SABSA Terms of Use"
+    license_url: "https://sabsa.org/open-source-licence/"
+    retrieved_at: "2026-09-05"
+    local_relative_path: "reference-only/SABSA/W105-SABSA-PAB.pdf"
+    file_type: "pdf"
+    sha256: "1d686a0808dddfbbf8a766d292370f1c59e76dfb581dd0edc20bbddebd462aac"
+    tenant: portfolio-demo
+    allowed_roles: [security-architect]
+    classification: "restricted"
+    approved: false
+    approved_by: null
+    approved_at: null
+    notes: "Reference-only. Do not chunk, embed, index, publish, or use for AI retrieval without written permission from The SABSA Institute."
