@@ -1,0 +1,80 @@
+queries:
+  - id: REL-01
+    expected: relevant
+    query: "What controls should protect authentication credentials and login sessions?"
+
+  - id: REL-02
+    expected: relevant
+    query: "What security controls should be considered during an enterprise architecture review?"
+
+  - id: REL-03
+    expected: relevant
+    query: "What are the Govern Map Measure and Manage functions of the AI Risk Management Framework?"
+
+  - id: REL-04
+    expected: relevant
+    query: "What security risks are specific to generative AI systems?"
+
+  - id: REL-05
+    expected: relevant
+    query: "What is the Govern function in the NIST Cybersecurity Framework?"
+
+  - id: REL-06
+    expected: relevant
+    query: "How should systems security engineering be incorporated into the system development lifecycle?"
+
+  - id: REL-07
+    expected: relevant
+    query: "What are the main principles of zero trust architecture?"
+
+  - id: REL-08
+    expected: relevant
+    query: "How should an application defend against prompt injection?"
+
+  - id: REL-09
+    expected: relevant
+    query: "What controls help secure a cloud architecture?"
+
+  - id: REL-10
+    expected: relevant
+    query: "How are trust boundaries and data flows used during threat modeling?"
+
+  - id: IRREL-01
+    expected: irrelevant
+    query: "How long should homemade lasagna bake?"
+
+  - id: IRREL-02
+    expected: irrelevant
+    query: "What tire pressure should be used for a passenger vehicle?"
+
+  - id: IRREL-03
+    expected: irrelevant
+    query: "Who won the professional basketball championship?"
+
+  - id: IRREL-04
+    expected: irrelevant
+    query: "When should rose bushes be pruned?"
+
+  - id: IRREL-05
+    expected: irrelevant
+    query: "How is mortgage interest calculated?"
+
+  - id: IRREL-06
+    expected: irrelevant
+    query: "How do you say good morning in Spanish?"
+
+  - id: IRREL-07
+    expected: irrelevant
+    query: "What type of engine oil should a lawn mower use?"
+
+  - id: IRREL-08
+    expected: irrelevant
+    query: "How do you tune an acoustic guitar?"
+
+  - id: IRREL-09
+    expected: irrelevant
+    query: "What temperature should a chocolate cake be baked at?"
+
+  - id: IRREL-10
+    expected: irrelevant
+    query: "What freshwater fish can live together in an aquarium?"

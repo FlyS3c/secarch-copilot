@@ -1,0 +1,27 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime data and model artifacts
+data/raw/
+data/private/
+chroma/
+logs/
+models/
+*.safetensors
+*.gguf
+*.bin
+
+# Editors and operating system
+.vscode/
+.DS_Store
+Thumbs.db
