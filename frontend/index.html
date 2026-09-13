@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+    <meta
+        http-equiv="Content-Security-Policy"
+        content="
+            default-src 'self';
+            connect-src http://127.0.0.1:8000;
+            script-src 'self';
+            style-src 'self';
+            img-src 'self' data:;
+            base-uri 'none';
+            form-action 'self';
+        "
+    >
+    <title>SecArch Copilot</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <header class="hero">
+        <div class="hero-content">
+            <p class="eyebrow">Local security architecture assistant</p>
+            <h1>SecArch Copilot</h1>
+            <p>
+                Generate an evidence-backed first draft of an enterprise
+                architecture review or threat model.
+            </p>
+        </div>
+    </header>
+
+    <main class="page-shell">
+        <section class="warning" aria-labelledby="data-warning-title">
+            <h2 id="data-warning-title">Use sanitized information only</h2>
+            <p>
+                Do not enter employer, customer, personal, credential,
+                production, or licensed-course information. Use fictional
+                or explicitly approved content.
+            </p>
+        </section>
+
+        <section class="panel" aria-labelledby="review-form-title">
+            <h2 id="review-form-title">Architecture details</h2>
+
+            <form id="review-form" novalidate>
+                <div class="field">
+                    <label for="workflow">Workflow</label>
+                    <select id="workflow" name="workflow">
+                        <option value="architecture-review">
+                            Architecture Review
+                        </option>
+                        <option value="threat-model">
+                            Threat Model
+                        </option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="api-key">Local API key</label>
+                    <input
+                        id="api-key"
+                        name="api-key"
+                        type="password"
+                        autocomplete="off"
+                        required
+                    >
+                    <p class="field-help">
+                        Used only for this request. It is not saved in browser
+                        storage or placed in the repository.
+                    </p>
+                </div>
+
+                <div class="field">
+                    <label for="system-name">System name</label>
+                    <input
+                        id="system-name"
+                        name="system-name"
+                        type="text"
+                        minlength="2"
+                        maxlength="100"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="purpose">Purpose</label>
+                    <textarea
+                        id="purpose"
+                        name="purpose"
+                        minlength="20"
+                        maxlength="2000"
+                        rows="5"
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="components">Components</label>
+                        <textarea
+                            id="components"
+                            name="components"
+                            rows="6"
+                            required
+                        ></textarea>
+                        <p class="field-help">Enter one item per line.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="data-classes">Data classifications</label>
+                        <textarea
+                            id="data-classes"
+                            name="data-classes"
+                            rows="6"
+                        ></textarea>
+                        <p class="field-help">Enter one item per line.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="identities">Identities</label>
+                        <textarea
+                            id="identities"
+                            name="identities"
+                            rows="6"
+                        ></textarea>
+                        <p class="field-help">Enter one item per line.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="integrations">Integrations</label>
+                        <textarea
+                            id="integrations"
+                            name="integrations"
+                            rows="6"
+                        ></textarea>
+                        <p class="field-help">Enter one item per line.</p>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="network-boundaries">
+                        Network and trust boundaries
+                    </label>
+                    <textarea
+                        id="network-boundaries"
+                        name="network-boundaries"
+                        rows="5"
+                    ></textarea>
+                    <p class="field-help">Enter one item per line.</p>
+                </div>
+
+                <fieldset id="threat-model-fields" hidden>
+                    <legend>Threat-model details</legend>
+
+                    <div class="field">
+                        <label for="data-flows">Data flows</label>
+                        <textarea
+                            id="data-flows"
+                            name="data-flows"
+                            rows="5"
+                        ></textarea>
+                        <p class="field-help">
+                            Enter one data flow per line.
+                        </p>
+                    </div>
+                </fieldset>
+
+                <div class="button-row">
+                    <button id="submit-button" type="submit">
+                        Generate review
+                    </button>
+                    <button class="secondary" type="reset">
+                        Clear
+                    </button>
+                </div>
+            </form>
+
+            <p
+                id="request-status"
+                class="status"
+                role="status"
+                aria-live="polite"
+            ></p>
+        </section>
+
+        <section
+            id="results"
+            class="panel"
+            aria-labelledby="results-title"
+            hidden
+        >
+            <div class="results-heading">
+                <h2 id="results-title">Architecture review draft</h2>
+                <span class="review-badge">
+                    Human review required
+                </span>
+            </div>
+
+            <section class="result-section">
+                <h3>Summary</h3>
+                <p id="summary"></p>
+            </section>
+
+            <section class="result-section">
+                <h3>Assumptions</h3>
+                <ul id="assumptions"></ul>
+            </section>
+
+            <section class="result-section">
+                <h3>Missing information</h3>
+                <ul id="missing-information"></ul>
+            </section>
+
+            <div id="architecture-results">
+                <section class="result-section">
+                    <h3>Findings and recommendations</h3>
+                    <div id="findings-list"></div>
+                </section>
+            </div>
+
+            <div id="threat-model-results" hidden>
+                <section class="result-section">
+                    <h3>Assets</h3>
+                    <ul id="assets"></ul>
+                </section>
+
+                <section class="result-section">
+                    <h3>Trust boundaries</h3>
+                    <ul id="trust-boundaries"></ul>
+                </section>
+
+                <section class="result-section">
+                    <h3>Threats and mitigations</h3>
+                    <div id="threats-list"></div>
+                </section>
+
+                <section class="result-section">
+                    <h3>Residual-risk questions</h3>
+                    <ul id="residual-risk-questions"></ul>
+                </section>
+            </div>
+
+            <section class="result-section">
+                <h3>Limitations</h3>
+                <ul id="limitations"></ul>
+            </section>
+        </section>
+    </main>
+</body>
+</html>

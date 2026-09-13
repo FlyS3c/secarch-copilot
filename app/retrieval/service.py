@@ -62,13 +62,22 @@ class RetrievalService:
         collection: Collection,
         embedding_model: str,
         max_distance: float,
-    ):
+        ollama_host: str | None = None,
+        request_timeout_seconds: int = 90,
+    ) -> None:
         if max_distance < 0:
             raise ValueError("max_distance cannot be negative")
+
+        if request_timeout_seconds < 1:
+            raise ValueError(
+                "request_timeout_seconds must be positive"
+            )
 
         self.collection = collection
         self.embedding_model = embedding_model
         self.max_distance = max_distance
+        self.ollama_host = ollama_host
+        self.request_timeout_seconds = request_timeout_seconds
 
     def search(
         self,
@@ -82,7 +91,16 @@ class RetrievalService:
         if not 1 <= top_k <= MAX_RESULTS:
             raise ValueError(f"top_k must be 1-{MAX_RESULTS}")
 
-        embedding = ollama.embed(
+        embedding_client = (
+            ollama.Client(
+                host=self.ollama_host,
+                timeout=self.request_timeout_seconds,
+            )
+            if self.ollama_host
+            else ollama
+        )
+
+        embedding = embedding_client.embed(
             model=self.embedding_model,
             input=query,
         )["embeddings"][0]

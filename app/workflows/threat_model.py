@@ -1,51 +1,42 @@
-"""Run the retrieval-augmented architecture-review workflow."""
+"""Run the retrieval-augmented threat-model workflow."""
+
 import json
 import logging
-from threading import BoundedSemaphore
 from datetime import datetime, timezone
 from pathlib import Path
 from time import perf_counter
 from typing import Literal
 from uuid import uuid4
 
-import httpx
-
 import chromadb
+import httpx
 from ollama import Client, chat
 
-from app.core.auth import UserContext
 from app.core.audit import AuditEvent, write_audit_event
+from app.core.auth import UserContext
 from app.core.settings import settings
-from app.models.requests import ArchitectureReviewRequest
-from app.models.responses import ArchitectureReview
-from app.prompts.architecture_review import (
-    build_architecture_review_prompt,
-)
-from app.retrieval.service import (
-    RetrievedChunk,
-    RetrievalService,
+from app.models.requests import ThreatModelRequest
+from app.models.responses import ThreatModel
+from app.prompts.threat_model import build_threat_model_prompt
+from app.retrieval.service import RetrievedChunk, RetrievalService
+from app.workflows.architecture_review import (
+    ModelBusyError,
+    ModelTimeoutError,
+    _model_semaphore,
+    build_evidence_blocks,
+    build_system_description,
 )
 
 logger = logging.getLogger(__name__)
 
-class ModelBusyError(RuntimeError):
-    """Raised when the local model is already processing a request."""
 
-
-class ModelTimeoutError(RuntimeError):
-    """Raised when an Ollama operation exceeds its timeout."""
-
-
-_model_semaphore = BoundedSemaphore(
-    settings.max_concurrent_model_requests
-)
-
-
-def generate_review(
+def generate_threat_model(
     prompt: str,
     model: str = "llama3.2:3b",
     ollama_host: str | None = None,
-) -> ArchitectureReview:
+) -> ThreatModel:
+    """Generate and validate one structured threat model."""
+
     if not prompt.strip():
         raise ValueError("Prompt cannot be empty")
 
@@ -69,7 +60,7 @@ def generate_review(
         response = chat_function(
             model=model,
             messages=[{"role": "user", "content": prompt}],
-            format=ArchitectureReview.model_json_schema(),
+            format=ThreatModel.model_json_schema(),
             options={
                 "temperature": 0,
                 "num_predict": settings.max_output_tokens,
@@ -85,88 +76,47 @@ def generate_review(
     if not response.message.content:
         raise ValueError("Ollama returned an empty response")
 
-    return ArchitectureReview.model_validate_json(
+    return ThreatModel.model_validate_json(
         response.message.content
     )
 
 
-def _format_values(label: str, values: list[str]) -> str:
-    """Format one bounded request field for the system description."""
+def build_threat_model_description(
+    request: ThreatModelRequest,
+) -> str:
+    """Build a bounded description that includes data flows."""
 
-    cleaned_values = [
+    description = build_system_description(request)
+
+    cleaned_flows = [
         value.strip()
-        for value in values
+        for value in request.data_flows
         if value.strip()
     ]
 
-    formatted = "; ".join(cleaned_values) or "Not provided"
+    formatted_flows = "; ".join(cleaned_flows) or "Not provided"
 
-    return f"{label}: {formatted}"
-
-
-def build_system_description(
-    request: ArchitectureReviewRequest,
-) -> str:
-    """Convert validated request fields into a bounded description."""
-
-    description = "\n".join(
-        [
-            f"System name: {request.system_name.strip()}",
-            f"Purpose: {request.purpose.strip()}",
-            _format_values("Components", request.components),
-            _format_values("Data classes", request.data_classes),
-            _format_values("Identities", request.identities),
-            _format_values("Integrations", request.integrations),
-            _format_values(
-                "Network boundaries",
-                request.network_boundaries,
-            ),
-        ]
+    description = (
+        f"{description}\n"
+        f"Data flows: {formatted_flows}"
     )
 
     if len(description) > settings.max_input_chars:
         raise ValueError(
-            "Combined architecture description exceeds "
+            "Combined threat-model description exceeds "
             f"{settings.max_input_chars} characters"
         )
 
     return description
 
 
-def build_evidence_blocks(
-    chunks: list[RetrievedChunk],
-) -> list[str]:
-    evidence_blocks: list[str] = []
+def build_abstention_threat_model() -> ThreatModel:
+    """Return a safe result when evidence is insufficient."""
 
-    for evidence_number, chunk in enumerate(chunks, start=1):
-        allowed_citation = json.dumps(
-            {
-                "source_id": chunk.source_id,
-                "chunk_id": chunk.chunk_id,
-                "page_or_section": chunk.page_or_section,
-            },
-            ensure_ascii=False,
-        )
-
-        evidence_blocks.append(
-            f"EVIDENCE_{evidence_number}\n"
-            f"ALLOWED_CITATION: {allowed_citation}\n"
-            f"SOURCE_VERSION: {chunk.source_version}\n"
-            f"DISTANCE: {chunk.distance:.6f}\n"
-            "REFERENCE_TEXT:\n"
-            f"{chunk.text}"
-        )
-
-    return evidence_blocks
-
-
-def build_abstention_review() -> ArchitectureReview:
-    """Return a safe response when no sufficient evidence is available."""
-
-    return ArchitectureReview(
+    return ThreatModel(
         summary=(
             "Insufficient authorized evidence was available to "
-            "complete the architecture review."
+            "complete the threat model."
         ),
         assumptions=[],
         missing_information=[
@@ -175,21 +125,29 @@ def build_abstention_review() -> ArchitectureReview:
                 "is required."
             )
         ],
-        findings=[],
+        assets=[],
+        trust_boundaries=[],
+        threats=[],
+        residual_risk_questions=[
+            (
+                "What additional approved reference material should "
+                "be added before completing this threat model?"
+            )
+        ],
         limitations=[
             (
-                "No model-generated recommendations were produced "
-                "because the evidence threshold was not met."
+                "No model-generated threats were produced because "
+                "the evidence threshold was not met."
             )
         ],
     )
 
 
-def validate_review_citations(
-    review: ArchitectureReview,
+def validate_threat_citations(
+    threat_model: ThreatModel,
     chunks: list[RetrievedChunk],
 ) -> None:
-    """Reject missing or fabricated model citations."""
+    """Reject missing or fabricated threat citations."""
 
     allowed_citations = {
         (
@@ -200,13 +158,13 @@ def validate_review_citations(
         for chunk in chunks
     }
 
-    for finding in review.findings:
-        if not finding.citations:
+    for threat in threat_model.threats:
+        if not threat.citations:
             raise ValueError(
-                f"Finding {finding.finding_id} has no citations"
+                f"Threat {threat.threat_id} has no citations"
             )
 
-        for citation in finding.citations:
+        for citation in threat.citations:
             citation_key = (
                 citation.source_id,
                 citation.chunk_id,
@@ -215,11 +173,12 @@ def validate_review_citations(
 
             if citation_key not in allowed_citations:
                 raise ValueError(
-                    f"Finding {finding.finding_id} contains "
+                    f"Threat {threat.threat_id} contains "
                     "an unsupported citation"
                 )
 
-def _record_review_audit(
+
+def _record_threat_model_audit(
     request_id: str,
     context: UserContext,
     chunks: list[RetrievedChunk],
@@ -228,12 +187,12 @@ def _record_review_audit(
     error_category: str | None,
     audit_log_path: Path,
 ) -> None:
-    """Record metadata without recording prompts or document text."""
+    """Record metadata without prompts or document text."""
 
     event = AuditEvent(
         request_id=request_id,
         timestamp_utc=datetime.now(timezone.utc),
-        workflow="architecture_review",
+        workflow="threat_model",
         tenant=context.tenant,
         role=context.role,
         policy_decision="allowed",
@@ -251,13 +210,15 @@ def _record_review_audit(
     write_audit_event(event, audit_log_path)
 
 
-def run_architecture_review(
-    request: ArchitectureReviewRequest,
+def run_threat_model(
+    request: ThreatModelRequest,
     context: UserContext,
     retrieval_service: RetrievalService | None = None,
     request_id: str | None = None,
     audit_log_path: Path | None = None,
-) -> ArchitectureReview:
+) -> ThreatModel:
+    """Run authorized retrieval and structured threat modeling."""
+
     started_at = perf_counter()
     audit_request_id = request_id or str(uuid4())
 
@@ -270,7 +231,7 @@ def run_architecture_review(
     error_category: str | None = "unhandled_error"
 
     try:
-        description = build_system_description(request)
+        description = build_threat_model_description(request)
 
         if retrieval_service is None:
             chroma_client = chromadb.PersistentClient(
@@ -308,43 +269,43 @@ def run_architecture_review(
             error_category = None
 
             logger.info(
-                "architecture_review_abstained tenant=%s role=%s",
+                "threat_model_abstained tenant=%s role=%s",
                 context.tenant,
                 context.role,
             )
 
-            return build_abstention_review()
+            return build_abstention_threat_model()
 
         evidence_blocks = build_evidence_blocks(chunks)
 
-        prompt = build_architecture_review_prompt(
+        prompt = build_threat_model_prompt(
             system_description=description,
             evidence_blocks=evidence_blocks,
         )
 
-        review = generate_review(
+        threat_model = generate_threat_model(
             prompt=prompt,
             model=settings.generation_model,
             ollama_host=settings.ollama_host,
         )
 
-        validate_review_citations(review, chunks)
+        validate_threat_citations(threat_model, chunks)
 
         audit_result = "success"
         error_category = None
 
         logger.info(
             (
-                "architecture_review_completed tenant=%s role=%s "
-                "evidence_count=%d finding_count=%d"
+                "threat_model_completed tenant=%s role=%s "
+                "evidence_count=%d threat_count=%d"
             ),
             context.tenant,
             context.role,
             len(chunks),
-            len(review.findings),
+            len(threat_model.threats),
         )
 
-        return review
+        return threat_model
 
     except ModelBusyError:
         error_category = "model_busy"
@@ -358,7 +319,7 @@ def run_architecture_review(
     finally:
         if audit_log_path is not None:
             try:
-                _record_review_audit(
+                _record_threat_model_audit(
                     request_id=audit_request_id,
                     context=context,
                     chunks=chunks,
