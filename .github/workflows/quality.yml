@@ -1,0 +1,85 @@
+name: Quality and Security
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      SECARCH_DATA_ROOT: /tmp/secarch-copilot-data
+      SECARCH_LOCAL_API_KEY: synthetic-ci-api-key-at-least-24-characters
+      SECARCH_ACTIVE_COLLECTION: ci_test_collection
+      SECARCH_MAX_DISTANCE: "1.207854"
+      OLLAMA_HOST: http://127.0.0.1:11434
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev-linux.txt
+
+      - name: Prepare test data directory
+        run: mkdir -p /tmp/secarch-copilot-data
+
+      - name: Install locked dependencies
+        run: |
+          python -m pip install \
+            --require-hashes \
+            --requirement requirements-dev-linux.txt
+
+      - name: Ruff lint
+        run: python -m ruff check .
+
+      - name: Ruff formatting
+        run: python -m ruff format --check .
+
+      - name: Mypy
+        run: python -m mypy app
+
+      - name: Bandit
+        run: python -m bandit -r app scripts
+
+      - name: Dependency audit
+        run: |
+          python -m pip_audit \
+            --requirement requirements-linux.txt \
+            --ignore-vuln PYSEC-2026-311 \
+            --ignore-vuln PYSEC-2026-3813 \
+            --ignore-vuln PYSEC-2026-3814 \
+            --ignore-vuln PYSEC-2026-3815
+
+      - name: Tests and coverage
+        run: |
+          python -m pytest \
+            --cov=app \
+            --cov-report=term-missing \
+            --cov-fail-under=80
+
+      - name: Build hardened container
+        run: docker build --tag secarch-copilot:ci .
+
+      - name: Verify non-root image user
+        run: |
+          test "$(docker image inspect secarch-copilot:ci \
+            --format '{{.Config.User}}')" = "secarch"
