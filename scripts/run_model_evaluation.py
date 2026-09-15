@@ -9,7 +9,7 @@ import platform
 import shutil
 import subprocess  # nosec B404
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from time import perf_counter
 from typing import Any
@@ -81,7 +81,7 @@ class RecordingRetrievalService(RetrievalService):
 def utc_now() -> str:
     """Return an ISO-formatted UTC timestamp."""
 
-    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
 
 def repository_path(relative_path: str) -> Path:
@@ -489,8 +489,7 @@ def main() -> int:
     )
 
     run_id = (
-        datetime.now(timezone.utc).strftime("model-eval-%Y%m%dT%H%M%SZ")
-        + f"-{uuid4().hex[:8]}"
+        datetime.now(UTC).strftime("model-eval-%Y%m%dT%H%M%SZ") + f"-{uuid4().hex[:8]}"
     )
 
     results = [

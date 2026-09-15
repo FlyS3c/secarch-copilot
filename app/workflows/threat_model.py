@@ -1,7 +1,7 @@
 """Run the retrieval-augmented threat-model workflow."""
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from time import perf_counter
 from typing import Literal
@@ -171,7 +171,7 @@ def _record_threat_model_audit(
 
     event = AuditEvent(
         request_id=request_id,
-        timestamp_utc=datetime.now(timezone.utc),
+        timestamp_utc=datetime.now(UTC),
         workflow="threat_model",
         tenant=context.tenant,
         role=context.role,

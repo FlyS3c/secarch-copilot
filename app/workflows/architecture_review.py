@@ -2,7 +2,7 @@
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from threading import BoundedSemaphore
 from time import perf_counter
@@ -222,7 +222,7 @@ def _record_review_audit(
 
     event = AuditEvent(
         request_id=request_id,
-        timestamp_utc=datetime.now(timezone.utc),
+        timestamp_utc=datetime.now(UTC),
         workflow="architecture_review",
         tenant=context.tenant,
         role=context.role,

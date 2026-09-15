@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
@@ -71,7 +71,7 @@ def create_index(
             f"Collection already exists; choose a new version: {collection_name}"
         )
 
-    ingestion_time = datetime.now(timezone.utc).isoformat()
+    ingestion_time = datetime.now(UTC).isoformat()
     collection = client.create_collection(
         name=collection_name,
         embedding_function=None,

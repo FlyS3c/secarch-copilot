@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import chromadb
@@ -148,7 +148,7 @@ def main() -> int:
     output_directory = REPO_ROOT / "eval" / "results"
     output_directory.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
 
     output_file = output_directory / f"retrieval-threshold-{timestamp}.csv"
 

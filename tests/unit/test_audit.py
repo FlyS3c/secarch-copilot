@@ -1,7 +1,7 @@
 """Tests for privacy-safe audit events."""
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
@@ -13,7 +13,7 @@ from app.core.audit import AuditEvent, write_audit_event
 def build_event() -> AuditEvent:
     return AuditEvent(
         request_id=uuid4(),
-        timestamp_utc=datetime.now(timezone.utc),
+        timestamp_utc=datetime.now(UTC),
         workflow="architecture_review",
         tenant="portfolio-demo",
         role="security-architect",
