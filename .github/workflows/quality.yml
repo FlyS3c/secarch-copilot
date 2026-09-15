@@ -61,6 +61,8 @@ jobs:
         run: python -m bandit -r app scripts
 
       - name: Dependency audit
+        # Temporary ChromaDB exceptions are documented in
+        # docs/dependency-risk-register.md and expire on 2026-10-15.
         run: |
           python -m pip_audit \
             --requirement requirements-linux.txt \
