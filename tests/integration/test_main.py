@@ -6,7 +6,7 @@ from app.core.settings import settings
 from app.main import app
 from app.models.responses import ArchitectureReview, ThreatModel
 
-TEST_API_KEY = "synthetic-integration-key-at-least-24-characters"
+TEST_API_KEY = "existing-synthetic-value"  # gitleaks:allow -- synthetic test credential
 
 
 def valid_payload() -> dict:

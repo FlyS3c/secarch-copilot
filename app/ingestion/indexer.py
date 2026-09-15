@@ -10,6 +10,7 @@ from typing import Any, cast
 import chromadb
 from chromadb.api.types import Embeddings, Metadatas
 
+from app.core.chroma import build_chroma_settings
 from app.ingestion.chunker import Chunk
 from app.ingestion.manifest import SourceRecord
 
@@ -64,7 +65,10 @@ def create_index(
         raise ValueError("Duplicate chunk IDs detected")
 
     chroma_path.mkdir(parents=True, exist_ok=True)
-    client = chromadb.PersistentClient(path=str(chroma_path))
+    client = chromadb.PersistentClient(
+        path=str(chroma_path),
+        settings=build_chroma_settings(),
+    )
     existing_names = {collection.name for collection in client.list_collections()}
     if collection_name in existing_names:
         raise ValueError(

@@ -15,6 +15,7 @@ from ollama import Client, chat
 
 from app.core.audit import AuditEvent, write_audit_event
 from app.core.auth import UserContext
+from app.core.chroma import build_chroma_settings
 from app.core.settings import settings
 from app.models.requests import ArchitectureReviewRequest
 from app.models.responses import ArchitectureReview
@@ -259,7 +260,10 @@ def run_architecture_review(
         description = build_system_description(request)
 
         if retrieval_service is None:
-            chroma_client = chromadb.PersistentClient(path=str(settings.chroma_path))
+            chroma_client = chromadb.PersistentClient(
+                path=str(settings.chroma_path),
+                settings=build_chroma_settings(),
+            )
 
             collection = chroma_client.get_collection(
                 name=settings.secarch_active_collection,

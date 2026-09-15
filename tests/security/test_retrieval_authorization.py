@@ -6,6 +6,7 @@ import chromadb
 import pytest
 
 from app.core.auth import UserContext
+from app.core.chroma import build_chroma_settings
 from app.retrieval.service import RetrievalService
 
 QUERY_TEXT = "zero trust architecture guidance"
@@ -24,6 +25,7 @@ def retrieval_service(
 
     client = chromadb.PersistentClient(
         path=str(tmp_path / "chroma"),
+        settings=build_chroma_settings(),
     )
 
     collection = client.create_collection(

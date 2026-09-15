@@ -5,6 +5,7 @@ from pathlib import Path
 import chromadb
 import pytest
 
+from app.core.chroma import build_chroma_settings
 from app.ingestion.chunker import Chunk
 from app.ingestion.indexer import create_index
 from app.ingestion.manifest import SourceRecord
@@ -54,7 +55,10 @@ def test_every_stored_record_has_access_metadata(tmp_path: Path) -> None:
     )
 
     assert count == 1
-    client = chromadb.PersistentClient(path=str(tmp_path / "chroma"))
+    client = chromadb.PersistentClient(
+        path=str(tmp_path / "chroma"),
+        settings=build_chroma_settings(),
+    )
     record = client.get_collection("secarch_test_2026_09_08_v1").get()
     metadata = record["metadatas"][0]
     required = {
@@ -78,7 +82,10 @@ def test_every_stored_record_has_access_metadata(tmp_path: Path) -> None:
 
 def test_existing_collection_is_not_overwritten(tmp_path: Path) -> None:
     chroma_path = tmp_path / "chroma"
-    client = chromadb.PersistentClient(path=str(chroma_path))
+    client = chromadb.PersistentClient(
+        path=str(chroma_path),
+        settings=build_chroma_settings(),
+    )
     client.create_collection("secarch_test_existing_v1")
 
     source = approved_source()

@@ -21,7 +21,7 @@ jobs:
 
     env:
       SECARCH_DATA_ROOT: /tmp/secarch-copilot-data
-      SECARCH_LOCAL_API_KEY: synthetic-ci-api-key-at-least-24-characters
+      SECARCH_LOCAL_API_KEY: synthetic-ci-api-key-at-least-24-characters # gitleaks:allow -- synthetic CI credential
       SECARCH_ACTIVE_COLLECTION: ci_test_collection
       SECARCH_MAX_DISTANCE: "1.207854"
       OLLAMA_HOST: http://127.0.0.1:11434

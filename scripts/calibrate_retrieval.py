@@ -19,6 +19,7 @@ if str(REPO_ROOT) not in sys.path:
 
 
 from app.core.auth import build_local_context
+from app.core.chroma import build_chroma_settings
 from app.ingestion.embedder import OllamaEmbedder
 from app.retrieval.service import build_authorization_filter
 
@@ -75,7 +76,10 @@ def main() -> int:
         role=role,
     )
 
-    client = chromadb.PersistentClient(path=str(data_root / "chroma"))
+    client = chromadb.PersistentClient(
+        path=str(data_root / "chroma"),
+        settings=build_chroma_settings(),
+    )
 
     collection = client.get_collection(
         name=collection_name,

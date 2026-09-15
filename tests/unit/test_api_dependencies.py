@@ -10,7 +10,7 @@ from app.api.dependencies import get_user_context
 from app.core.auth import UserContext
 from app.core.settings import settings
 
-TEST_API_KEY = "synthetic-test-api-key-at-least-24-characters"
+TEST_API_KEY = "existing-synthetic-value"  # gitleaks:allow -- synthetic test credential
 
 authentication_app = FastAPI()
 
