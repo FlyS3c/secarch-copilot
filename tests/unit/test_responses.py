@@ -32,16 +32,12 @@ def valid_review() -> dict:
 
     return {
         "summary": "The proposed architecture requires additional access controls.",
-        "assumptions": [
-            "The system is accessible only to authorized employees."
-        ],
+        "assumptions": ["The system is accessible only to authorized employees."],
         "missing_information": [
             "The identity provider configuration was not supplied."
         ],
         "findings": [valid_finding()],
-        "limitations": [
-            "This is an advisory review and requires human validation."
-        ],
+        "limitations": ["This is an advisory review and requires human validation."],
     }
 
 
@@ -73,10 +69,31 @@ def test_unexpected_field_is_rejected() -> None:
 
 def test_more_than_ten_findings_is_rejected() -> None:
     payload = valid_review()
-    payload["findings"] = [
-        valid_finding(number)
-        for number in range(1, 12)
-    ]
+    payload["findings"] = [valid_finding(number) for number in range(1, 12)]
+
+    with pytest.raises(ValidationError):
+        ArchitectureReview.model_validate(payload)
+
+
+def test_invalid_finding_id_is_rejected() -> None:
+    payload = valid_review()
+    payload["findings"][0]["finding_id"] = "EVIDENCE_1"
+
+    with pytest.raises(ValidationError):
+        ArchitectureReview.model_validate(payload)
+
+
+def test_severity_label_is_rejected_as_risk() -> None:
+    payload = valid_review()
+    payload["findings"][0]["risk"] = "High"
+
+    with pytest.raises(ValidationError):
+        ArchitectureReview.model_validate(payload)
+
+
+def test_human_review_cannot_be_disabled() -> None:
+    payload = valid_review()
+    payload["findings"][0]["human_review_required"] = False
 
     with pytest.raises(ValidationError):
         ArchitectureReview.model_validate(payload)

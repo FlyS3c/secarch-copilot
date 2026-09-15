@@ -52,7 +52,9 @@ class OllamaEmbedder:
         dimensions = {len(vector) for vector in all_embeddings}
         if len(dimensions) != 1 or 0 in dimensions:
             raise RuntimeError("Embedding vectors have inconsistent dimensions")
-        if any(not math.isfinite(value) for vector in all_embeddings for value in vector):
+        if any(
+            not math.isfinite(value) for vector in all_embeddings for value in vector
+        ):
             raise RuntimeError("Embedding vectors contain non-finite values")
         return all_embeddings
 

@@ -1,0 +1,26 @@
+{
+  "system_name": "Synthetic Knowledge Assistant",
+  "purpose": "Provide fictional employees with security guidance retrieved from an approved synthetic knowledge base.",
+  "components": [
+    "Browser interface",
+    "Local API",
+    "Vector database",
+    "Local language model"
+  ],
+  "data_classes": [
+    "Public synthetic documentation"
+  ],
+  "identities": [
+    "Fictional employee",
+    "Security architect"
+  ],
+  "integrations": [
+    "Local embedding service",
+    "Local generation service"
+  ],
+  "network_boundaries": [
+    "Browser to local API",
+    "Local API to vector database",
+    "Local API to language model"
+  ]
+}

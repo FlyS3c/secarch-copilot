@@ -3,7 +3,6 @@
 from app.core.auth import UserContext
 from app.retrieval.service import RetrievalService
 
-
 TEST_EMBEDDING = [1.0, 0.0, 0.0]
 
 

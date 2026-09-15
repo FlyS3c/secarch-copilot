@@ -63,9 +63,7 @@ def chunk_sections(
             if current and len(candidate) > max_chars:
                 chunk_text = current.strip()
                 identifier = hashlib.sha256(
-                    f"{source_id}|{section.location}|{chunk_index}|{chunk_text}".encode(
-                        "utf-8"
-                    )
+                    f"{source_id}|{section.location}|{chunk_index}|{chunk_text}".encode()
                 ).hexdigest()[:16]
                 chunks.append(
                     Chunk(
@@ -87,9 +85,7 @@ def chunk_sections(
         if current.strip():
             chunk_text = current.strip()
             identifier = hashlib.sha256(
-                f"{source_id}|{section.location}|{chunk_index}|{chunk_text}".encode(
-                    "utf-8"
-                )
+                f"{source_id}|{section.location}|{chunk_index}|{chunk_text}".encode()
             ).hexdigest()[:16]
             chunks.append(
                 Chunk(

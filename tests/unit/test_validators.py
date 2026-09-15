@@ -8,6 +8,7 @@ import pytest
 from app.ingestion.manifest import SourceRecord
 from app.ingestion.validators import (
     SourceValidationError,
+    quarantine_source_file,
     validate_extracted_text,
     validate_source_file,
 )
@@ -46,15 +47,68 @@ def test_valid_file_passes_checksum(tmp_path: Path) -> None:
     assert result.path == path.resolve()
 
 
-def test_modified_file_is_rejected(tmp_path: Path) -> None:
+def test_modified_file_is_rejected_and_quarantined(
+    tmp_path: Path,
+) -> None:
     relative = Path("raw/fixture.txt")
     path = tmp_path / relative
     path.parent.mkdir(parents=True)
     path.write_bytes(b"modified")
 
     source = source_for(relative, b"original")
-    with pytest.raises(SourceValidationError, match="SHA-256 mismatch"):
+
+    with pytest.raises(
+        SourceValidationError,
+        match="SHA-256 mismatch",
+    ) as error:
         validate_source_file(source, tmp_path)
+
+    quarantined_path = quarantine_source_file(
+        source,
+        tmp_path,
+        reason=str(error.value),
+    )
+
+    reason_path = quarantined_path.with_name(f"{quarantined_path.name}.reason.txt")
+
+    assert not path.exists()
+    assert quarantined_path.is_file()
+    assert quarantined_path.read_bytes() == b"modified"
+    assert "SHA-256 mismatch" in reason_path.read_text(encoding="utf-8")
+
+
+def test_unsupported_file_type_is_rejected_and_quarantined(
+    tmp_path: Path,
+) -> None:
+    relative = Path("raw/fixture.exe")
+    path = tmp_path / relative
+    path.parent.mkdir(parents=True)
+    content = b"synthetic executable content"
+    path.write_bytes(content)
+
+    source = source_for(relative, content).model_copy(
+        update={
+            "file_type": "exe",
+        }
+    )
+
+    with pytest.raises(
+        SourceValidationError,
+        match="unsupported file type",
+    ) as error:
+        validate_source_file(source, tmp_path)
+
+    quarantined_path = quarantine_source_file(
+        source,
+        tmp_path,
+        reason=str(error.value),
+    )
+
+    assert not path.exists()
+    assert quarantined_path.is_file()
+    assert quarantined_path.read_bytes() == content
+    assert quarantined_path.parent.name == "fixture-source"
+    assert quarantined_path.parent.parent.name == "quarantine"
 
 
 def test_private_key_is_rejected() -> None:

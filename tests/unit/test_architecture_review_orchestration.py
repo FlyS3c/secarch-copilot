@@ -7,6 +7,7 @@ from app.models.requests import ArchitectureReviewRequest
 from app.models.responses import ArchitectureReview
 from app.retrieval.service import RetrievedChunk
 from app.workflows.architecture_review import (
+    CitationValidationError,
     run_architecture_review,
 )
 
@@ -16,8 +17,10 @@ class FakeRetrievalService:
 
     def __init__(self, chunks: list[RetrievedChunk]):
         self.chunks = chunks
+        self.queries: list[str] = []
 
     def search(self, query, context, top_k):
+        self.queries.append(query)
         return self.chunks
 
 
@@ -25,8 +28,7 @@ def synthetic_request() -> ArchitectureReviewRequest:
     return ArchitectureReviewRequest(
         system_name="Synthetic Portal",
         purpose=(
-            "Provide fictional users with access to synthetic "
-            "account information."
+            "Provide fictional users with access to synthetic account information."
         ),
         components=["Web application", "API"],
         data_classes=["Synthetic data"],
@@ -61,18 +63,22 @@ def test_workflow_abstains_without_evidence(monkeypatch) -> None:
         fail_if_called,
     )
 
+    request = synthetic_request()
+    retrieval_service = FakeRetrievalService([])
+
     review = run_architecture_review(
-        request=synthetic_request(),
+        request=request,
         context=build_local_context(
             "portfolio-demo",
             "security-architect",
         ),
-        retrieval_service=FakeRetrievalService([]),
+        retrieval_service=retrieval_service,
     )
 
     assert review.findings == []
     assert review.missing_information
     assert "Insufficient authorized evidence" in review.summary
+    assert retrieval_service.queries == [request.purpose]
 
 
 def test_workflow_accepts_supported_citation(monkeypatch) -> None:
@@ -88,8 +94,7 @@ def test_workflow_accepts_supported_citation(monkeypatch) -> None:
                         "risk": "Administrative authentication is weak.",
                         "severity": "high",
                         "recommendation": (
-                            "Require stronger administrative "
-                            "authentication."
+                            "Require stronger administrative authentication."
                         ),
                         "citations": [
                             {
@@ -116,9 +121,7 @@ def test_workflow_accepts_supported_citation(monkeypatch) -> None:
             "portfolio-demo",
             "security-architect",
         ),
-        retrieval_service=FakeRetrievalService(
-            [retrieved_chunk()]
-        ),
+        retrieval_service=FakeRetrievalService([retrieved_chunk()]),
     )
 
     assert len(review.findings) == 1
@@ -135,7 +138,10 @@ def test_workflow_rejects_fabricated_citation(monkeypatch) -> None:
                 "findings": [
                     {
                         "finding_id": "F-001",
-                        "risk": "Synthetic risk.",
+                        "risk": (
+                            "Synthetic administrative access could permit "
+                            "unauthorized access."
+                        ),
                         "severity": "medium",
                         "recommendation": "Synthetic recommendation.",
                         "citations": [
@@ -158,7 +164,7 @@ def test_workflow_rejects_fabricated_citation(monkeypatch) -> None:
     )
 
     with pytest.raises(
-        ValueError,
+        CitationValidationError,
         match="unsupported citation",
     ):
         run_architecture_review(
@@ -167,7 +173,5 @@ def test_workflow_rejects_fabricated_citation(monkeypatch) -> None:
                 "portfolio-demo",
                 "security-architect",
             ),
-            retrieval_service=FakeRetrievalService(
-                [retrieved_chunk()]
-            ),
+            retrieval_service=FakeRetrievalService([retrieved_chunk()]),
         )

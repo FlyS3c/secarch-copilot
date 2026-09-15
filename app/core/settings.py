@@ -74,11 +74,8 @@ class Settings(BaseSettings):
     def audit_log_path(self) -> Path:
         """Return the audit-log file outside the repository."""
 
-        return (
-            self.secarch_data_root
-            / "logs"
-            / "secarch-audit.jsonl"
-        )
+        return self.secarch_data_root / "logs" / "secarch-audit.jsonl"
 
 
-settings = Settings()
+# Required settings are loaded and validated from environment variables.
+settings = Settings()  # type: ignore[call-arg]

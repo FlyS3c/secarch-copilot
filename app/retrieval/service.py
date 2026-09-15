@@ -8,7 +8,6 @@ from chromadb.api.models.Collection import Collection
 
 from app.core.auth import UserContext
 
-
 MAX_RESULTS = 8
 
 REQUIRED_CITATION_FIELDS = (
@@ -69,9 +68,7 @@ class RetrievalService:
             raise ValueError("max_distance cannot be negative")
 
         if request_timeout_seconds < 1:
-            raise ValueError(
-                "request_timeout_seconds must be positive"
-            )
+            raise ValueError("request_timeout_seconds must be positive")
 
         self.collection = collection
         self.embedding_model = embedding_model
@@ -116,13 +113,48 @@ class RetrievalService:
             ],
         )
 
+        id_batches = result["ids"]
+        document_batches = result.get("documents")
+        metadata_batches = result.get("metadatas")
+        distance_batches = result.get("distances")
+
+        if (
+            document_batches is None
+            or metadata_batches is None
+            or distance_batches is None
+        ):
+            raise ValueError("Chroma query returned incomplete retrieval results")
+
+        if (
+            not id_batches
+            or not document_batches
+            or not metadata_batches
+            or not distance_batches
+        ):
+            return []
+
+        chunk_ids = id_batches[0]
+        documents = document_batches[0]
+        metadatas = metadata_batches[0]
+        distances = distance_batches[0]
+
+        result_lengths = {
+            len(chunk_ids),
+            len(documents),
+            len(metadatas),
+            len(distances),
+        }
+
+        if len(result_lengths) != 1:
+            raise ValueError("Chroma query returned inconsistent result lengths")
+
         chunks: list[RetrievedChunk] = []
 
         for chunk_id, text, metadata, distance in zip(
-            result["ids"][0],
-            result["documents"][0],
-            result["metadatas"][0],
-            result["distances"][0],
+            chunk_ids,
+            documents,
+            metadatas,
+            distances,
         ):
             distance_value = float(distance)
 
@@ -131,27 +163,20 @@ class RetrievalService:
                 continue
 
             if not isinstance(metadata, dict):
-                raise ValueError(
-                    f"Chunk {chunk_id} has invalid metadata"
-                )
+                raise TypeError(f"Chunk {chunk_id} has invalid metadata")
 
             missing_fields = [
-                field
-                for field in REQUIRED_CITATION_FIELDS
-                               if not metadata.get(field)
+                field for field in REQUIRED_CITATION_FIELDS if not metadata.get(field)
             ]
 
             if missing_fields:
                 missing = ", ".join(missing_fields)
                 raise ValueError(
-                    f"Chunk {chunk_id} is missing citation metadata: "
-                    f"{missing}"
+                    f"Chunk {chunk_id} is missing citation metadata: {missing}"
                 )
 
             if not isinstance(text, str) or not text.strip():
-                raise ValueError(
-                    f"Chunk {chunk_id} has no usable text"
-                )
+                raise ValueError(f"Chunk {chunk_id} has no usable text")
 
             chunks.append(
                 RetrievedChunk(
@@ -160,12 +185,8 @@ class RetrievalService:
                     metadata=metadata,
                     distance=distance_value,
                     source_id=str(metadata["source_id"]),
-                    page_or_section=str(
-                        metadata["page_or_section"]
-                    ),
-                    source_version=str(
-                        metadata["source_version"]
-                    ),
+                    page_or_section=str(metadata["page_or_section"]),
+                    source_version=str(metadata["source_version"]),
                 )
             )
 

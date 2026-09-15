@@ -38,7 +38,7 @@ def _parse_pdf(path: Path) -> list[ParsedSection]:
 
 
 def _parse_docx(path: Path) -> list[ParsedSection]:
-    document = Document(path)
+    document = Document(str(path))
     sections: list[ParsedSection] = []
     current_heading = "document start"
     current_paragraphs: list[str] = []

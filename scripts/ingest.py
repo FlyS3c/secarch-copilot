@@ -9,7 +9,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -21,6 +20,7 @@ from app.ingestion.manifest import SourceRecord, load_manifest
 from app.ingestion.parser import parse_document
 from app.ingestion.validators import (
     SourceValidationError,
+    quarantine_source_file,
     validate_extracted_text,
     validate_manifest_uniqueness,
     validate_source_file,
@@ -60,7 +60,8 @@ def main() -> int:
         )
         manifest = load_manifest(manifest_path)
         validate_manifest_uniqueness(manifest)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
+        # CLI boundary: report manifest failures with a nonzero exit code.
         print(f"ERROR: {exc}")
         return 1
 
@@ -84,7 +85,26 @@ def main() -> int:
             warnings = validate_extracted_text(full_text)
             chunks = chunk_sections(source.source_id, sections)
         except (OSError, ValueError, SourceValidationError) as exc:
-            blocking_errors.append(f"{source.source_id}: {exc}")
+            if args.dry_run:
+                blocking_errors.append(f"{source.source_id}: {exc}")
+                continue
+
+            try:
+                quarantined_path = quarantine_source_file(
+                    source,
+                    data_root,
+                    reason=str(exc),
+                )
+            except (OSError, SourceValidationError) as quarantine_exc:
+                blocking_errors.append(
+                    f"{source.source_id}: {exc}; quarantine failed: {quarantine_exc}"
+                )
+            else:
+                print(f"QUARANTINED {source.source_id}: {quarantined_path}")
+                blocking_errors.append(
+                    f"{source.source_id}: {exc}; quarantined to {quarantined_path}"
+                )
+
             continue
 
         accepted_sources[source.source_id] = source
@@ -128,14 +148,12 @@ def main() -> int:
             chunks=all_chunks,
             embeddings=embeddings,
         )
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
+        # CLI boundary: report index failures with a nonzero exit code.
         print(f"ERROR: Index creation failed: {exc}")
         return 1
 
-    print(
-        f"\nINGESTION COMPLETE: {stored_count} records stored in "
-        f"{args.collection}"
-    )
+    print(f"\nINGESTION COMPLETE: {stored_count} records stored in {args.collection}")
     print("Test this collection before changing the configured active collection.")
     return 0
 

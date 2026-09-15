@@ -1,0 +1,22 @@
+{
+  "system_name": "Synthetic Quantum Encryption Claim",
+  "purpose": "Determine whether every component in a fictional web application must use quantum-resistant encryption.",
+  "components": [
+    "Web application",
+    "REST API",
+    "Object storage"
+  ],
+  "data_classes": [
+    "Public synthetic information"
+  ],
+  "identities": [
+    "Fictional user",
+    "Administrator"
+  ],
+  "integrations": [],
+  "network_boundaries": [
+    "Internet to web application",
+    "Web application to API",
+    "API to storage"
+  ]
+}

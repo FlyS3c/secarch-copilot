@@ -8,7 +8,6 @@ import pytest
 from app.core.auth import UserContext
 from app.retrieval.service import RetrievalService
 
-
 QUERY_TEXT = "zero trust architecture guidance"
 TEST_EMBEDDING = [1.0, 0.0, 0.0]
 
@@ -39,9 +38,10 @@ def retrieval_service(
             "wrong-role-01",
             "too-sensitive-01",
             "unapproved-01",
+            "deleted-01",
         ],
-        documents=[QUERY_TEXT] * 5,
-        embeddings=[TEST_EMBEDDING] * 5,
+        documents=[QUERY_TEXT] * 6,
+        embeddings=[TEST_EMBEDDING] * 6,
         metadatas=[
             {
                 "tenant": "portfolio-demo",
@@ -81,6 +81,13 @@ def retrieval_service(
                 "approved": False,
                 "deleted": False,
             },
+            {
+                "tenant": "portfolio-demo",
+                "allowed_roles": ["security-architect"],
+                "classification_rank": 1,
+                "approved": True,
+                "deleted": True,
+            },
         ],
     )
 
@@ -108,9 +115,7 @@ def retrieval_service(
     )
 
     return RetrievalService(
-        collection=collection,
-        embedding_model="test-embedding-model",
-        max_distance=1.0
+        collection=collection, embedding_model="test-embedding-model", max_distance=1.0
     )
 
 
@@ -129,13 +134,11 @@ def test_search_excludes_unauthorized_records(
         top_k=8,
     )
 
-    ids = {
-        item.chunk_id
-        for item in results
-    }
+    ids = {item.chunk_id for item in results}
 
     assert "allowed-01" in ids
     assert "wrong-tenant-01" not in ids
     assert "wrong-role-01" not in ids
     assert "too-sensitive-01" not in ids
     assert "unapproved-01" not in ids
+    assert "deleted-01" not in ids

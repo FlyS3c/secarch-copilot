@@ -53,12 +53,14 @@ def write_audit_event(
 
     serialized_event = event.model_dump_json()
 
-    with _AUDIT_LOCK:
-        with destination.open(
+    with (
+        _AUDIT_LOCK,
+        destination.open(
             mode="a",
             encoding="utf-8",
-        ) as audit_file:
-            audit_file.write(serialized_event)
-            audit_file.write("\n")
+        ) as audit_file,
+    ):
+        audit_file.write(serialized_event)
+        audit_file.write("\n")
 
     return destination

@@ -14,9 +14,7 @@ def valid_response() -> dict:
 
     return {
         "summary": "The fictional design requires stronger access controls.",
-        "assumptions": [
-            "The storage service is reachable from the internet."
-        ],
+        "assumptions": ["The storage service is reachable from the internet."],
         "missing_information": [
             "The identity-provider configuration was not supplied."
         ],
@@ -24,13 +22,11 @@ def valid_response() -> dict:
             {
                 "finding_id": "F-001",
                 "risk": (
-                    "Administrative access does not require "
-                    "multifactor authentication."
+                    "Administrative access does not require multifactor authentication."
                 ),
                 "severity": "high",
                 "recommendation": (
-                    "Require multifactor authentication for all "
-                    "administrative access."
+                    "Require multifactor authentication for all administrative access."
                 ),
                 "citations": [
                     {
@@ -42,9 +38,7 @@ def valid_response() -> dict:
                 "human_review_required": True,
             }
         ],
-        "limitations": [
-            "The recommendation requires human review."
-        ],
+        "limitations": ["The recommendation requires human review."],
     }
 
 
@@ -55,9 +49,7 @@ def test_generate_review_uses_schema(monkeypatch) -> None:
         captured_arguments.update(kwargs)
 
         return SimpleNamespace(
-            message=SimpleNamespace(
-                content=json.dumps(valid_response())
-            )
+            message=SimpleNamespace(content=json.dumps(valid_response()))
         )
 
     monkeypatch.setattr(
@@ -80,9 +72,7 @@ def test_invalid_model_response_is_rejected(monkeypatch) -> None:
 
     def fake_chat(**kwargs):
         return SimpleNamespace(
-            message=SimpleNamespace(
-                content=json.dumps(invalid_response)
-            )
+            message=SimpleNamespace(content=json.dumps(invalid_response))
         )
 
     monkeypatch.setattr(

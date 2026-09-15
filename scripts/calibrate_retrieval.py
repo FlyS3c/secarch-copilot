@@ -12,7 +12,6 @@ import chromadb
 import yaml
 from dotenv import load_dotenv
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 if str(REPO_ROOT) not in sys.path:
@@ -28,9 +27,7 @@ def required_environment_value(name: str) -> str:
     value = os.getenv(name)
 
     if not value:
-        raise ValueError(
-            f"Required environment variable is missing: {name}"
-        )
+        raise ValueError(f"Required environment variable is missing: {name}")
 
     return value
 
@@ -38,13 +35,11 @@ def required_environment_value(name: str) -> str:
 def main() -> int:
     load_dotenv(REPO_ROOT / ".env")
 
-    data_root = Path(
-        required_environment_value("SECARCH_DATA_ROOT")
-    ).expanduser().resolve()
-
-    collection_name = required_environment_value(
-        "SECARCH_ACTIVE_COLLECTION"
+    data_root = (
+        Path(required_environment_value("SECARCH_DATA_ROOT")).expanduser().resolve()
     )
+
+    collection_name = required_environment_value("SECARCH_ACTIVE_COLLECTION")
 
     embedding_model = os.getenv(
         "EMBEDDING_MODEL",
@@ -66,31 +61,21 @@ def main() -> int:
         "security-architect",
     )
 
-    query_file = (
-        REPO_ROOT
-        / "eval"
-        / "retrieval-threshold-queries.yml"
-    )
+    query_file = REPO_ROOT / "eval" / "retrieval-threshold-queries.yml"
 
-    raw = yaml.safe_load(
-        query_file.read_text(encoding="utf-8")
-    )
+    raw = yaml.safe_load(query_file.read_text(encoding="utf-8"))
 
     cases = raw.get("queries", [])
 
     if len(cases) < 20:
-        raise ValueError(
-            "At least 20 calibration queries are required"
-        )
+        raise ValueError("At least 20 calibration queries are required")
 
     context = build_local_context(
         tenant=tenant,
         role=role,
     )
 
-    client = chromadb.PersistentClient(
-        path=str(data_root / "chroma")
-    )
+    client = chromadb.PersistentClient(path=str(data_root / "chroma"))
 
     collection = client.get_collection(
         name=collection_name,
@@ -110,9 +95,7 @@ def main() -> int:
         query = str(case["query"])
 
         if expected not in {"relevant", "irrelevant"}:
-            raise ValueError(
-                f"{query_id}: expected must be relevant or irrelevant"
-            )
+            raise ValueError(f"{query_id}: expected must be relevant or irrelevant")
 
         embedding = embedder.embed_query(query)
 
@@ -135,13 +118,9 @@ def main() -> int:
             best_metadata = metadatas[0]
             best_distance = float(distances[0])
 
-            source_id = str(
-                best_metadata.get("source_id", "")
-            )
+            source_id = str(best_metadata.get("source_id", ""))
 
-            page_or_section = str(
-                best_metadata.get("page_or_section", "")
-            )
+            page_or_section = str(best_metadata.get("page_or_section", ""))
         else:
             best_chunk_id = ""
             source_id = ""
@@ -163,23 +142,15 @@ def main() -> int:
         )
 
         print(
-            f"{query_id:<10} "
-            f"{expected:<10} "
-            f"distance={best_distance} "
-            f"source={source_id}"
+            f"{query_id:<10} {expected:<10} distance={best_distance} source={source_id}"
         )
 
     output_directory = REPO_ROOT / "eval" / "results"
     output_directory.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now(timezone.utc).strftime(
-        "%Y%m%dT%H%M%SZ"
-    )
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
-    output_file = (
-        output_directory
-        / f"retrieval-threshold-{timestamp}.csv"
-    )
+    output_file = output_directory / f"retrieval-threshold-{timestamp}.csv"
 
     with output_file.open(
         "w",
@@ -197,15 +168,13 @@ def main() -> int:
     relevant_distances = [
         float(row["best_distance"])
         for row in rows
-        if row["expected"] == "relevant"
-        and row["best_distance"] != ""
+        if row["expected"] == "relevant" and row["best_distance"] != ""
     ]
 
     irrelevant_distances = [
         float(row["best_distance"])
         for row in rows
-        if row["expected"] == "irrelevant"
-        and row["best_distance"] != ""
+        if row["expected"] == "irrelevant" and row["best_distance"] != ""
     ]
 
     print()
@@ -215,25 +184,14 @@ def main() -> int:
         largest_relevant = max(relevant_distances)
         smallest_irrelevant = min(irrelevant_distances)
 
-        print(
-            "Largest relevant-query distance: "
-            f"{largest_relevant:.6f}"
-        )
+        print(f"Largest relevant-query distance: {largest_relevant:.6f}")
 
-        print(
-            "Smallest irrelevant-query distance: "
-            f"{smallest_irrelevant:.6f}"
-        )
+        print(f"Smallest irrelevant-query distance: {smallest_irrelevant:.6f}")
 
         if largest_relevant < smallest_irrelevant:
-            suggested_threshold = (
-                largest_relevant + smallest_irrelevant
-            ) / 2
+            suggested_threshold = (largest_relevant + smallest_irrelevant) / 2
 
-            print(
-                "Initial suggested threshold: "
-                f"{suggested_threshold:.6f}"
-            )
+            print(f"Initial suggested threshold: {suggested_threshold:.6f}")
         else:
             print(
                 "Relevant and irrelevant distances overlap. "

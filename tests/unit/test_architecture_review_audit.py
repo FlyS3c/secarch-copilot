@@ -52,8 +52,8 @@ def test_review_writes_metadata_without_input(
         missing_information=[],
         findings=[
             Finding(
-                finding_id="F-01",
-                risk="Synthetic risk",
+                finding_id="F-001",
+                risk="Synthetic risk with a meaningful security impact.",
                 severity="medium",
                 recommendation="Synthetic recommendation",
                 citations=[citation],

@@ -1,20 +1,20 @@
 """Run the retrieval-augmented architecture-review workflow."""
+
 import json
 import logging
-from threading import BoundedSemaphore
 from datetime import datetime, timezone
 from pathlib import Path
+from threading import BoundedSemaphore
 from time import perf_counter
 from typing import Literal
-from uuid import uuid4
-
-import httpx
+from uuid import UUID, uuid4
 
 import chromadb
+import httpx
 from ollama import Client, chat
 
-from app.core.auth import UserContext
 from app.core.audit import AuditEvent, write_audit_event
+from app.core.auth import UserContext
 from app.core.settings import settings
 from app.models.requests import ArchitectureReviewRequest
 from app.models.responses import ArchitectureReview
@@ -22,11 +22,12 @@ from app.prompts.architecture_review import (
     build_architecture_review_prompt,
 )
 from app.retrieval.service import (
-    RetrievedChunk,
     RetrievalService,
+    RetrievedChunk,
 )
 
 logger = logging.getLogger(__name__)
+
 
 class ModelBusyError(RuntimeError):
     """Raised when the local model is already processing a request."""
@@ -36,9 +37,11 @@ class ModelTimeoutError(RuntimeError):
     """Raised when an Ollama operation exceeds its timeout."""
 
 
-_model_semaphore = BoundedSemaphore(
-    settings.max_concurrent_model_requests
-)
+class CitationValidationError(ValueError):
+    """Raised when generated citations fail validation."""
+
+
+_model_semaphore = BoundedSemaphore(settings.max_concurrent_model_requests)
 
 
 def generate_review(
@@ -52,9 +55,7 @@ def generate_review(
     acquired = _model_semaphore.acquire(blocking=False)
 
     if not acquired:
-        raise ModelBusyError(
-            "The local model is already processing a request"
-        )
+        raise ModelBusyError("The local model is already processing a request")
 
     try:
         chat_function = (
@@ -76,28 +77,20 @@ def generate_review(
             },
         )
     except httpx.TimeoutException as exc:
-        raise ModelTimeoutError(
-            "Ollama generation request timed out"
-        ) from exc
+        raise ModelTimeoutError("Ollama generation request timed out") from exc
     finally:
         _model_semaphore.release()
 
     if not response.message.content:
         raise ValueError("Ollama returned an empty response")
 
-    return ArchitectureReview.model_validate_json(
-        response.message.content
-    )
+    return ArchitectureReview.model_validate_json(response.message.content)
 
 
 def _format_values(label: str, values: list[str]) -> str:
     """Format one bounded request field for the system description."""
 
-    cleaned_values = [
-        value.strip()
-        for value in values
-        if value.strip()
-    ]
+    cleaned_values = [value.strip() for value in values if value.strip()]
 
     formatted = "; ".join(cleaned_values) or "Not provided"
 
@@ -170,10 +163,7 @@ def build_abstention_review() -> ArchitectureReview:
         ),
         assumptions=[],
         missing_information=[
-            (
-                "Additional approved and relevant reference material "
-                "is required."
-            )
+            ("Additional approved and relevant reference material is required.")
         ],
         findings=[],
         limitations=[
@@ -202,7 +192,7 @@ def validate_review_citations(
 
     for finding in review.findings:
         if not finding.citations:
-            raise ValueError(
+            raise CitationValidationError(
                 f"Finding {finding.finding_id} has no citations"
             )
 
@@ -214,13 +204,13 @@ def validate_review_citations(
             )
 
             if citation_key not in allowed_citations:
-                raise ValueError(
-                    f"Finding {finding.finding_id} contains "
-                    "an unsupported citation"
+                raise CitationValidationError(
+                    f"Finding {finding.finding_id} contains an unsupported citation"
                 )
 
+
 def _record_review_audit(
-    request_id: str,
+    request_id: UUID,
     context: UserContext,
     chunks: list[RetrievedChunk],
     started_at: float,
@@ -237,13 +227,9 @@ def _record_review_audit(
         tenant=context.tenant,
         role=context.role,
         policy_decision="allowed",
-        source_ids=sorted(
-            {chunk.source_id for chunk in chunks}
-        ),
+        source_ids=sorted({chunk.source_id for chunk in chunks}),
         retrieved_chunk_count=len(chunks),
-        latency_ms=int(
-            (perf_counter() - started_at) * 1000
-        ),
+        latency_ms=int((perf_counter() - started_at) * 1000),
         result=result,
         error_category=error_category,
     )
@@ -259,7 +245,7 @@ def run_architecture_review(
     audit_log_path: Path | None = None,
 ) -> ArchitectureReview:
     started_at = perf_counter()
-    audit_request_id = request_id or str(uuid4())
+    audit_request_id = UUID(request_id) if request_id else uuid4()
 
     chunks: list[RetrievedChunk] = []
     audit_result: Literal[
@@ -273,9 +259,7 @@ def run_architecture_review(
         description = build_system_description(request)
 
         if retrieval_service is None:
-            chroma_client = chromadb.PersistentClient(
-                path=str(settings.chroma_path)
-            )
+            chroma_client = chromadb.PersistentClient(path=str(settings.chroma_path))
 
             collection = chroma_client.get_collection(
                 name=settings.secarch_active_collection,
@@ -287,21 +271,23 @@ def run_architecture_review(
                 embedding_model=settings.embedding_model,
                 max_distance=settings.secarch_max_distance,
                 ollama_host=settings.ollama_host,
-                request_timeout_seconds=(
-                    settings.request_timeout_seconds
-                ),
+                request_timeout_seconds=(settings.request_timeout_seconds),
             )
-
         try:
-            chunks = retrieval_service.search(
-                query=description,
+            purpose_chunks = retrieval_service.search(
+                query=request.purpose.strip(),
                 context=context,
                 top_k=settings.max_results,
             )
+
+            if purpose_chunks:
+                chunks = retrieval_service.search(
+                    query=description,
+                    context=context,
+                    top_k=settings.max_results,
+                )
         except httpx.TimeoutException as exc:
-            raise ModelTimeoutError(
-                "Ollama embedding request timed out"
-            ) from exc
+            raise ModelTimeoutError("Ollama embedding request timed out") from exc
 
         if not chunks:
             audit_result = "abstained"

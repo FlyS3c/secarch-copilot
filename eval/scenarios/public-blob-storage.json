@@ -1,0 +1,27 @@
+{
+  "system_name": "Synthetic Customer Portal",
+  "purpose": "Allow fictional customers to access synthetic account information through an internet-facing web application.",
+  "components": [
+    "Azure-hosted web application",
+    "REST API",
+    "Azure Blob Storage",
+    "Identity provider"
+  ],
+  "data_classes": [
+    "Public marketing content",
+    "Synthetic customer information"
+  ],
+  "identities": [
+    "Customer",
+    "Administrator",
+    "Managed identity"
+  ],
+  "integrations": [
+    "Synthetic identity provider"
+  ],
+  "network_boundaries": [
+    "Internet to web application",
+    "Web application to API",
+    "API to storage"
+  ]
+}

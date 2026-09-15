@@ -39,9 +39,7 @@ def test_generation_uses_output_and_timeout_limits(
             captured["options"] = kwargs["options"]
 
             return SimpleNamespace(
-                message=SimpleNamespace(
-                    content=valid_model_response()
-                )
+                message=SimpleNamespace(content=valid_model_response())
             )
 
     monkeypatch.setattr(workflow_module, "Client", FakeClient)
@@ -68,9 +66,7 @@ def test_busy_model_request_is_rejected(
             return False
 
         def release(self) -> None:
-            raise AssertionError(
-                "An unacquired semaphore must not be released"
-            )
+            raise AssertionError("An unacquired semaphore must not be released")
 
     monkeypatch.setattr(
         workflow_module,
@@ -82,6 +78,4 @@ def test_busy_model_request_is_rejected(
         workflow_module.ModelBusyError,
         match="already processing",
     ):
-        workflow_module.generate_review(
-            prompt="Review this synthetic architecture."
-        )
+        workflow_module.generate_review(prompt="Review this synthetic architecture.")

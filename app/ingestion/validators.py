@@ -10,7 +10,6 @@ from pathlib import Path, PurePosixPath
 
 from app.ingestion.manifest import SourceManifest, SourceRecord
 
-
 ALLOWED_SUFFIXES = {
     "pdf": ".pdf",
     "docx": ".docx",
@@ -39,7 +38,9 @@ REVIEW_CONTENT_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ),
     (
         "prompt or role marker",
-        re.compile(r"\b(?:system prompt|developer message|assistant role)\b", re.IGNORECASE),
+        re.compile(
+            r"\b(?:system prompt|developer message|assistant role)\b", re.IGNORECASE
+        ),
     ),
     (
         "email address",
@@ -116,10 +117,10 @@ def validate_source_file(
     if not path.is_file():
         raise SourceValidationError(f"{source.source_id}: file not found: {path}")
 
-    expected_suffix = ALLOWED_SUFFIXES[source.file_type]
-    if path.suffix.lower() != expected_suffix:
+    expected_suffix = ALLOWED_SUFFIXES.get(source.file_type)
+    if expected_suffix is None:
         raise SourceValidationError(
-            f"{source.source_id}: expected {expected_suffix}, got {path.suffix}"
+            f"{source.source_id}: unsupported file type: {source.file_type}"
         )
 
     file_size = path.stat().st_size
@@ -141,6 +142,57 @@ def validate_source_file(
         )
 
     return ValidationResult(source=source, path=path)
+
+
+def quarantine_source_file(
+    source: SourceRecord,
+    data_root: Path,
+    *,
+    reason: str,
+) -> Path:
+    """Move an invalid source into an isolated quarantine directory."""
+    try:
+        source_path = source.resolve_local_path(data_root)
+    except ValueError as exc:
+        raise SourceValidationError(
+            f"{source.source_id}: cannot quarantine an unsafe path"
+        ) from exc
+
+    if not source_path.is_file():
+        raise SourceValidationError(
+            f"{source.source_id}: quarantine source not found: {source_path}"
+        )
+
+    safe_source_id = re.sub(
+        r"[^A-Za-z0-9._-]",
+        "_",
+        source.source_id,
+    ).strip("._")
+
+    if not safe_source_id:
+        safe_source_id = "unknown-source"
+
+    quarantine_directory = (data_root / "quarantine" / safe_source_id).resolve()
+    quarantine_directory.mkdir(parents=True, exist_ok=True)
+
+    destination = quarantine_directory / source_path.name
+    sequence = 1
+
+    while destination.exists():
+        destination = quarantine_directory / (
+            f"{source_path.stem}-{sequence}{source_path.suffix}"
+        )
+        sequence += 1
+
+    source_path.replace(destination)
+
+    reason_path = destination.with_name(f"{destination.name}.reason.txt")
+    reason_path.write_text(
+        reason.strip() or "Unspecified validation failure",
+        encoding="utf-8",
+    )
+
+    return destination
 
 
 def validate_extracted_text(text: str) -> list[str]:

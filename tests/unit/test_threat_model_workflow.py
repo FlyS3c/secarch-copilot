@@ -19,15 +19,9 @@ def valid_response() -> dict:
     """Return a valid synthetic threat-model response."""
 
     return {
-        "summary": (
-            "The fictional application has identity and access risks."
-        ),
-        "assumptions": [
-            "The identity provider supports multifactor authentication."
-        ],
-        "missing_information": [
-            "Session-management details were not supplied."
-        ],
+        "summary": ("The fictional application has identity and access risks."),
+        "assumptions": ["The identity provider supports multifactor authentication."],
+        "missing_information": ["Session-management details were not supplied."],
         "assets": [
             "Synthetic customer records",
             "User identities",
@@ -39,20 +33,15 @@ def valid_response() -> dict:
             {
                 "threat_id": "TM-001",
                 "category": "spoofing",
-                "threat": (
-                    "An attacker could impersonate a legitimate user."
-                ),
+                "threat": ("An attacker could impersonate a legitimate user."),
                 "affected_assets": [
                     "User identities",
                 ],
                 "severity": "high",
                 "mitigation": (
-                    "Require phishing-resistant multifactor "
-                    "authentication."
+                    "Require phishing-resistant multifactor authentication."
                 ),
-                "residual_risk": (
-                    "Authenticated sessions could still be stolen."
-                ),
+                "residual_risk": ("Authenticated sessions could still be stolen."),
                 "citations": [
                     {
                         "source_id": "nist-sp-800-207",
@@ -63,12 +52,8 @@ def valid_response() -> dict:
                 "human_review_required": True,
             }
         ],
-        "residual_risk_questions": [
-            "How are compromised sessions detected?"
-        ],
-        "limitations": [
-            "The threat model requires human review."
-        ],
+        "residual_risk_questions": ["How are compromised sessions detected?"],
+        "limitations": ["The threat model requires human review."],
     }
 
 
@@ -79,9 +64,7 @@ def test_generate_threat_model_uses_schema(monkeypatch) -> None:
         captured_arguments.update(kwargs)
 
         return SimpleNamespace(
-            message=SimpleNamespace(
-                content=json.dumps(valid_response())
-            )
+            message=SimpleNamespace(content=json.dumps(valid_response()))
         )
 
     monkeypatch.setattr(
@@ -89,9 +72,7 @@ def test_generate_threat_model_uses_schema(monkeypatch) -> None:
         fake_chat,
     )
 
-    threat_model = generate_threat_model(
-        "Threat model this synthetic architecture."
-    )
+    threat_model = generate_threat_model("Threat model this synthetic architecture.")
 
     assert threat_model.threats[0].threat_id == "TM-001"
     assert threat_model.threats[0].category == "spoofing"
@@ -108,9 +89,7 @@ def test_invalid_model_response_is_rejected(
 
     def fake_chat(**kwargs):
         return SimpleNamespace(
-            message=SimpleNamespace(
-                content=json.dumps(invalid_response)
-            )
+            message=SimpleNamespace(content=json.dumps(invalid_response))
         )
 
     monkeypatch.setattr(
@@ -119,9 +98,7 @@ def test_invalid_model_response_is_rejected(
     )
 
     with pytest.raises(ValidationError):
-        generate_threat_model(
-            "Threat model this synthetic architecture."
-        )
+        generate_threat_model("Threat model this synthetic architecture.")
 
 
 def test_empty_prompt_is_rejected() -> None:
@@ -135,9 +112,7 @@ def test_empty_prompt_is_rejected() -> None:
 def test_description_includes_data_flows() -> None:
     request = ThreatModelRequest(
         system_name="Synthetic Portal",
-        purpose=(
-            "Provide fictional users access to synthetic records."
-        ),
+        purpose=("Provide fictional users access to synthetic records."),
         components=[
             "Web application",
             "REST API",
@@ -158,15 +133,12 @@ def test_description_includes_data_flows() -> None:
 
     assert (
         "Data flows: Browser to web application; "
-        "Web application to API; API to storage"
-        in description
+        "Web application to API; API to storage" in description
     )
 
 
 def test_allowed_threat_citation_is_accepted() -> None:
-    threat_model = ThreatModel.model_validate(
-        valid_response()
-    )
+    threat_model = ThreatModel.model_validate(valid_response())
 
     chunks = [
         SimpleNamespace(
@@ -180,9 +152,7 @@ def test_allowed_threat_citation_is_accepted() -> None:
 
 
 def test_unsupported_threat_citation_is_rejected() -> None:
-    threat_model = ThreatModel.model_validate(
-        valid_response()
-    )
+    threat_model = ThreatModel.model_validate(valid_response())
 
     chunks = [
         SimpleNamespace(

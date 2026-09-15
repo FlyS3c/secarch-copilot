@@ -1,12 +1,11 @@
 """Run the retrieval-augmented threat-model workflow."""
 
-import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from time import perf_counter
 from typing import Literal
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import chromadb
 import httpx
@@ -18,7 +17,7 @@ from app.core.settings import settings
 from app.models.requests import ThreatModelRequest
 from app.models.responses import ThreatModel
 from app.prompts.threat_model import build_threat_model_prompt
-from app.retrieval.service import RetrievedChunk, RetrievalService
+from app.retrieval.service import RetrievalService, RetrievedChunk
 from app.workflows.architecture_review import (
     ModelBusyError,
     ModelTimeoutError,
@@ -43,9 +42,7 @@ def generate_threat_model(
     acquired = _model_semaphore.acquire(blocking=False)
 
     if not acquired:
-        raise ModelBusyError(
-            "The local model is already processing a request"
-        )
+        raise ModelBusyError("The local model is already processing a request")
 
     try:
         chat_function = (
@@ -67,18 +64,14 @@ def generate_threat_model(
             },
         )
     except httpx.TimeoutException as exc:
-        raise ModelTimeoutError(
-            "Ollama generation request timed out"
-        ) from exc
+        raise ModelTimeoutError("Ollama generation request timed out") from exc
     finally:
         _model_semaphore.release()
 
     if not response.message.content:
         raise ValueError("Ollama returned an empty response")
 
-    return ThreatModel.model_validate_json(
-        response.message.content
-    )
+    return ThreatModel.model_validate_json(response.message.content)
 
 
 def build_threat_model_description(
@@ -88,18 +81,11 @@ def build_threat_model_description(
 
     description = build_system_description(request)
 
-    cleaned_flows = [
-        value.strip()
-        for value in request.data_flows
-        if value.strip()
-    ]
+    cleaned_flows = [value.strip() for value in request.data_flows if value.strip()]
 
     formatted_flows = "; ".join(cleaned_flows) or "Not provided"
 
-    description = (
-        f"{description}\n"
-        f"Data flows: {formatted_flows}"
-    )
+    description = f"{description}\nData flows: {formatted_flows}"
 
     if len(description) > settings.max_input_chars:
         raise ValueError(
@@ -120,10 +106,7 @@ def build_abstention_threat_model() -> ThreatModel:
         ),
         assumptions=[],
         missing_information=[
-            (
-                "Additional approved and relevant reference material "
-                "is required."
-            )
+            ("Additional approved and relevant reference material is required.")
         ],
         assets=[],
         trust_boundaries=[],
@@ -160,9 +143,7 @@ def validate_threat_citations(
 
     for threat in threat_model.threats:
         if not threat.citations:
-            raise ValueError(
-                f"Threat {threat.threat_id} has no citations"
-            )
+            raise ValueError(f"Threat {threat.threat_id} has no citations")
 
         for citation in threat.citations:
             citation_key = (
@@ -173,13 +154,12 @@ def validate_threat_citations(
 
             if citation_key not in allowed_citations:
                 raise ValueError(
-                    f"Threat {threat.threat_id} contains "
-                    "an unsupported citation"
+                    f"Threat {threat.threat_id} contains an unsupported citation"
                 )
 
 
 def _record_threat_model_audit(
-    request_id: str,
+    request_id: UUID,
     context: UserContext,
     chunks: list[RetrievedChunk],
     started_at: float,
@@ -196,13 +176,9 @@ def _record_threat_model_audit(
         tenant=context.tenant,
         role=context.role,
         policy_decision="allowed",
-        source_ids=sorted(
-            {chunk.source_id for chunk in chunks}
-        ),
+        source_ids=sorted({chunk.source_id for chunk in chunks}),
         retrieved_chunk_count=len(chunks),
-        latency_ms=int(
-            (perf_counter() - started_at) * 1000
-        ),
+        latency_ms=int((perf_counter() - started_at) * 1000),
         result=result,
         error_category=error_category,
     )
@@ -220,7 +196,7 @@ def run_threat_model(
     """Run authorized retrieval and structured threat modeling."""
 
     started_at = perf_counter()
-    audit_request_id = request_id or str(uuid4())
+    audit_request_id = UUID(request_id) if request_id else uuid4()
 
     chunks: list[RetrievedChunk] = []
     audit_result: Literal[
@@ -234,9 +210,7 @@ def run_threat_model(
         description = build_threat_model_description(request)
 
         if retrieval_service is None:
-            chroma_client = chromadb.PersistentClient(
-                path=str(settings.chroma_path)
-            )
+            chroma_client = chromadb.PersistentClient(path=str(settings.chroma_path))
 
             collection = chroma_client.get_collection(
                 name=settings.secarch_active_collection,
@@ -248,9 +222,7 @@ def run_threat_model(
                 embedding_model=settings.embedding_model,
                 max_distance=settings.secarch_max_distance,
                 ollama_host=settings.ollama_host,
-                request_timeout_seconds=(
-                    settings.request_timeout_seconds
-                ),
+                request_timeout_seconds=(settings.request_timeout_seconds),
             )
 
         try:
@@ -260,9 +232,7 @@ def run_threat_model(
                 top_k=settings.max_results,
             )
         except httpx.TimeoutException as exc:
-            raise ModelTimeoutError(
-                "Ollama embedding request timed out"
-            ) from exc
+            raise ModelTimeoutError("Ollama embedding request timed out") from exc
 
         if not chunks:
             audit_result = "abstained"

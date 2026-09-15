@@ -5,13 +5,13 @@ from __future__ import annotations
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import chromadb
+from chromadb.api.types import Embeddings, Metadatas
 
 from app.ingestion.chunker import Chunk
 from app.ingestion.manifest import SourceRecord
-
 
 COLLECTION_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{1,510}[a-z0-9]$")
 
@@ -105,8 +105,8 @@ def create_index(
             collection.add(
                 ids=[chunk.chunk_id for chunk in chunk_batch],
                 documents=[chunk.text for chunk in chunk_batch],
-                embeddings=embedding_batch,
-                metadatas=metadatas,
+                embeddings=cast(Embeddings, embedding_batch),
+                metadatas=cast(Metadatas, metadatas),
             )
 
         stored_count = collection.count()

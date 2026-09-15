@@ -9,7 +9,6 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-
 Classification = Literal["public", "internal-demo", "restricted"]
 Role = Literal["security-architect", "security-engineer", "viewer"]
 FileType = Literal["pdf", "docx", "markdown", "txt"]
@@ -61,9 +60,7 @@ class SourceRecord(BaseModel):
     @model_validator(mode="after")
     def approved_sources_need_approval_evidence(self) -> SourceRecord:
         if self.approved and (not self.approved_by or self.approved_at is None):
-            raise ValueError(
-                "approved=true requires approved_by and approved_at"
-            )
+            raise ValueError("approved=true requires approved_by and approved_at")
         return self
 
     @property
@@ -76,15 +73,11 @@ class SourceRecord(BaseModel):
         root = data_root.expanduser().resolve()
         relative = Path(self.local_relative_path)
         if relative.is_absolute():
-            raise ValueError(
-                f"{self.source_id}: local_relative_path must be relative"
-            )
+            raise ValueError(f"{self.source_id}: local_relative_path must be relative")
 
         candidate = (root / relative).resolve()
         if not candidate.is_relative_to(root):
-            raise ValueError(
-                f"{self.source_id}: local path escapes SECARCH_DATA_ROOT"
-            )
+            raise ValueError(f"{self.source_id}: local path escapes SECARCH_DATA_ROOT")
         return candidate
 
 

@@ -6,7 +6,6 @@ from app.core.settings import settings
 from app.main import app
 from app.models.responses import ArchitectureReview, ThreatModel
 
-
 TEST_API_KEY = "synthetic-integration-key-at-least-24-characters"
 
 
@@ -14,8 +13,7 @@ def valid_payload() -> dict:
     return {
         "system_name": "Synthetic Portal",
         "purpose": (
-            "Provide fictional users with access to synthetic "
-            "account information."
+            "Provide fictional users with access to synthetic account information."
         ),
         "components": ["Web application", "API"],
         "data_classes": ["Synthetic data"],
@@ -58,9 +56,7 @@ def synthetic_threat_model() -> ThreatModel:
                 "Internet to web application",
             ],
             "threats": [],
-            "residual_risk_questions": [
-                "How are authenticated sessions monitored?"
-            ],
+            "residual_risk_questions": ["How are authenticated sessions monitored?"],
             "limitations": ["Human review is required."],
         }
     )
@@ -145,9 +141,7 @@ def test_architecture_route_returns_review(
     )
 
     assert response.status_code == 200
-    assert response.json()["summary"] == (
-        "Synthetic architecture review completed."
-    )
+    assert response.json()["summary"] == ("Synthetic architecture review completed.")
 
 
 def test_threat_model_route_requires_key(
@@ -207,12 +201,8 @@ def test_threat_model_route_returns_model(
     )
 
     assert response.status_code == 200
-    assert response.json()["summary"] == (
-        "Synthetic threat model completed."
-    )
-    assert response.json()["assets"] == [
-        "Synthetic customer data"
-    ]
+    assert response.json()["summary"] == ("Synthetic threat model completed.")
+    assert response.json()["assets"] == ["Synthetic customer data"]
 
 
 def test_threat_model_cannot_select_identity(

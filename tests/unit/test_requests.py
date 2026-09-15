@@ -43,9 +43,7 @@ def valid_request() -> dict:
 
 
 def test_valid_architecture_request_is_accepted() -> None:
-    request = ArchitectureReviewRequest.model_validate(
-        valid_request()
-    )
+    request = ArchitectureReviewRequest.model_validate(valid_request())
 
     assert request.system_name == "Synthetic Customer Portal"
     assert len(request.components) == 3
@@ -86,10 +84,7 @@ def test_empty_components_are_rejected() -> None:
 
 def test_too_many_components_are_rejected() -> None:
     payload = valid_request()
-    payload["components"] = [
-        f"Synthetic component {number}"
-        for number in range(31)
-    ]
+    payload["components"] = [f"Synthetic component {number}" for number in range(31)]
 
     with pytest.raises(ValidationError):
         ArchitectureReviewRequest.model_validate(payload)

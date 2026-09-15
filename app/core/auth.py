@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 
-
 ALLOWED_TENANTS = {"portfolio-demo"}
 
 ROLE_CLEARANCE = {

@@ -143,11 +143,7 @@ class LocalRateLimitMiddleware:
             if len(timestamps) >= self.max_requests:
                 retry_after = max(
                     1,
-                    ceil(
-                        timestamps[0]
-                        + self.window_seconds
-                        - current_time
-                    ),
+                    ceil(timestamps[0] + self.window_seconds - current_time),
                 )
             else:
                 timestamps.append(current_time)
