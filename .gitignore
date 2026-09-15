@@ -16,7 +16,7 @@ data/raw/
 data/private/
 chroma/
 logs/
-models/
+/models/
 *.safetensors
 *.gguf
 *.bin
