@@ -8,7 +8,9 @@
 | Status | Temporarily accepted |
 | Scope | Controlled local portfolio demonstrations only |
 | Decision date | 2026-09-15 |
-| Review deadline | 2026-10-15 |
+| Original review deadline | 2026-10-15 |
+| Actual review date | 2026-11-09 |
+| Next review deadline | 2026-11-15, or sooner if a patched release ships or deployment scope changes |
 | Owner | Project maintainer |
 
 ### Vulnerabilities
@@ -44,6 +46,18 @@ Production deployment is not approved while these exceptions remain active.
 - Run the container as the non-root `secarch` user.
 - Retain application-layer tenant, role, classification, and source-approval filters.
 - Use controlled synthetic or public demonstration data only.
+
+### 2026-11-09 review
+
+All four project lockfiles pin `chromadb==1.5.9`. The Windows runtime
+audit, run without exceptions, reported the four Chroma advisories listed
+above. `PYSEC-2026-311` appeared twice. No patched stable version was
+identified. All five application and script client sites use embedded
+`PersistentClient`, and all four targeted tests passed.
+
+The maintainer renewed the exception for controlled local demonstrations
+only. The vulnerabilities are not fixed. Production and multi-user use
+remain excluded. Findings in other packages are not covered by this decision.
 
 ### Review Triggers
 
